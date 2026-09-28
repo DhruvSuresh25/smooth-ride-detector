@@ -1,5 +1,13 @@
 {
   "version": "7",
   "dialect": "postgresql",
-  "entries": []
+  "entries": [
+    {
+      "idx": 0,
+      "version": "7",
+      "when": 1790606475724,
+      "tag": "0000_drivesafe_vision_schema",
+      "breakpoints": true
+    }
+  ]
 }

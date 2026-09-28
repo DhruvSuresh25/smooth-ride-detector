@@ -14,16 +14,188 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      profiles: {
+        Row: {
+          account_status: string
+          avatar_url: string | null
+          browser_notifications: boolean
+          created_at: string
+          email: string
+          email_notifications: boolean
+          full_name: string
+          id: string
+          updated_at: string
+        }
+        Insert: {
+          account_status?: string
+          avatar_url?: string | null
+          browser_notifications?: boolean
+          created_at?: string
+          email?: string
+          email_notifications?: boolean
+          full_name?: string
+          id: string
+          updated_at?: string
+        }
+        Update: {
+          account_status?: string
+          avatar_url?: string | null
+          browser_notifications?: boolean
+          created_at?: string
+          email?: string
+          email_notifications?: boolean
+          full_name?: string
+          id?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      report_status_history: {
+        Row: {
+          changed_by: string | null
+          created_at: string
+          id: string
+          note: string | null
+          report_id: string
+          status: string
+        }
+        Insert: {
+          changed_by?: string | null
+          created_at?: string
+          id?: string
+          note?: string | null
+          report_id: string
+          status: string
+        }
+        Update: {
+          changed_by?: string | null
+          created_at?: string
+          id?: string
+          note?: string | null
+          report_id?: string
+          status?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "report_status_history_report_id_fkey"
+            columns: ["report_id"]
+            isOneToOne: false
+            referencedRelation: "reports"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      reports: {
+        Row: {
+          address: string
+          admin_notes: string | null
+          annotated_image_url: string | null
+          confidence: number | null
+          created_at: string
+          description: string | null
+          estimated_height: number | null
+          estimated_width: number | null
+          id: string
+          latitude: number | null
+          longitude: number | null
+          original_image_url: string | null
+          pothole_count: number
+          report_number: string
+          resolved_at: string | null
+          road_position: string | null
+          severity: string
+          status: string
+          submitter_email: string
+          submitter_name: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          address?: string
+          admin_notes?: string | null
+          annotated_image_url?: string | null
+          confidence?: number | null
+          created_at?: string
+          description?: string | null
+          estimated_height?: number | null
+          estimated_width?: number | null
+          id?: string
+          latitude?: number | null
+          longitude?: number | null
+          original_image_url?: string | null
+          pothole_count?: number
+          report_number?: string
+          resolved_at?: string | null
+          road_position?: string | null
+          severity?: string
+          status?: string
+          submitter_email?: string
+          submitter_name?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          address?: string
+          admin_notes?: string | null
+          annotated_image_url?: string | null
+          confidence?: number | null
+          created_at?: string
+          description?: string | null
+          estimated_height?: number | null
+          estimated_width?: number | null
+          id?: string
+          latitude?: number | null
+          longitude?: number | null
+          original_image_url?: string | null
+          pothole_count?: number
+          report_number?: string
+          resolved_at?: string | null
+          road_position?: string | null
+          severity?: string
+          status?: string
+          submitter_email?: string
+          submitter_name?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      user_roles: {
+        Row: {
+          created_at: string
+          id: string
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          role?: Database["public"]["Enums"]["app_role"]
+          user_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      has_role: {
+        Args: {
+          _role: Database["public"]["Enums"]["app_role"]
+          _user_id: string
+        }
+        Returns: boolean
+      }
     }
     Enums: {
-      [_ in never]: never
+      app_role: "user" | "admin"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -150,6 +322,8 @@ export type CompositeTypes<
 
 export const Constants = {
   public: {
-    Enums: {},
+    Enums: {
+      app_role: ["user", "admin"],
+    },
   },
 } as const
