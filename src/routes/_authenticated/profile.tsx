@@ -135,10 +135,11 @@ function ProfilePage() {
     key: "email_notifications" | "browser_notifications",
     value: boolean,
   ) {
-    const { error } = await supabase
-      .from("profiles")
-      .update({ [key]: value })
-      .eq("id", user!.id);
+    const patch =
+      key === "email_notifications"
+        ? { email_notifications: value }
+        : { browser_notifications: value };
+    const { error } = await supabase.from("profiles").update(patch).eq("id", user!.id);
     if (error) {
       toast.error("Could not save preference", { description: error.message });
       return;
