@@ -5,7 +5,7 @@ import { toast } from "sonner";
 
 import { AuthLayout } from "@/components/auth/AuthLayout";
 import { AuthIssueAlert } from "@/components/auth/AuthIssueAlert";
-import { PasswordField, passwordScore } from "@/components/auth/PasswordField";
+import { PasswordField } from "@/components/auth/PasswordField";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";

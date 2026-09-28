@@ -9,7 +9,7 @@ const GATEWAY_URL = "https://ai.gateway.lovable.dev/v1";
 
 function redactSensitiveText(value: string) {
   return value
-    .replace(/\b(?:password|passcode|token|secret)\s*(?:is|:|=)\s*[^\s,;]+/gi, "$1: [redacted]")
+    .replace(/\b(password|passcode|token|secret)\s*(?:is|:|=)\s*[^\s,;]+/gi, "$1: [redacted]")
     .replace(/\b(?:eyJ[a-zA-Z0-9_-]{10,}|sb_(?:secret|publishable)_[a-zA-Z0-9_-]+)\b/g, "[redacted]")
     .slice(0, 1200);
 }
