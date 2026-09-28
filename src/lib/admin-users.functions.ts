@@ -7,7 +7,7 @@ type AuthedContext = {
     rpc: (
       fn: "has_role",
       args: { _user_id: string; _role: "admin" | "user" },
-    ) => Promise<{ data: boolean | null; error: { message: string } | null }>;
+    ) => PromiseLike<{ data: boolean | null; error: { message: string } | null }>;
   };
   userId: string;
 };
