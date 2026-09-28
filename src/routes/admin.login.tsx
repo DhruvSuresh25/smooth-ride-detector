@@ -1,5 +1,6 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useState } from "react";
+import { useQueryClient } from "@tanstack/react-query";
 import { Loader2, ShieldCheck } from "lucide-react";
 import { toast } from "sonner";
 
@@ -33,6 +34,7 @@ export const Route = createFileRoute("/admin/login")({
 
 function AdminLoginPage() {
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [submitting, setSubmitting] = useState(false);
@@ -67,8 +69,9 @@ function AdminLoginPage() {
       return;
     }
 
+    queryClient.setQueryData(["is-admin", data.user.id], true);
     toast.success("Administrator signed in");
-    navigate({ to: "/admin/dashboard" });
+    navigate({ to: "/admin/dashboard", replace: true });
   }
 
   return (
