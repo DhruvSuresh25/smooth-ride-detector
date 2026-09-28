@@ -2,7 +2,7 @@
  * Pothole analysis service.
  *
  * This is the ONLY place that talks to a detection model. Today it runs a
- * deterministic simulated detector in the browser and draws bounding boxes onto
+ * AI vision check on the server (see pothole-vision.server.ts) and draws bounding boxes onto
  * a canvas to produce the annotated image.
  *
  * To connect a real model (YOLO, Roboflow, Hugging Face, or a custom Python

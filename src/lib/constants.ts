@@ -36,7 +36,7 @@ export const APP_NAME = "DriveSafe Vision";
 export const APP_TAGLINE = "Real-Time Pothole Detection Using Deep Learning";
 
 export const ANALYSIS_DISCLAIMER =
-  "Demo analysis is simulated until an AI detection API is connected.";
+  "Severity is estimated by AI from the photo — an inspector confirms it on site.";
 
 export function formatDate(value?: string | null) {
   if (!value) return "—";
