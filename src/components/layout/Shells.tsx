@@ -33,8 +33,8 @@ const adminNav: NavItem[] = [
 
 export function UserShell(props: {
   title: string;
-  subtitle?: string;
-  actions?: ReactNode;
+  subtitle?: string | undefined;
+  actions?: ReactNode | undefined;
   children: ReactNode;
 }) {
   return <AppShell navItems={userNav} {...props} />;
@@ -47,8 +47,8 @@ export function AdminShell({
   children,
 }: {
   title: string;
-  subtitle?: string;
-  actions?: ReactNode;
+  subtitle?: string | undefined;
+  actions?: ReactNode | undefined;
   children: ReactNode;
 }) {
   const { data: isAdmin, isLoading } = useIsAdmin();

@@ -65,9 +65,9 @@ export function AppShell({
 }: {
   navItems: NavItem[];
   title: string;
-  subtitle?: string;
-  actions?: ReactNode;
-  badge?: string;
+  subtitle?: string | undefined;
+  actions?: ReactNode | undefined;
+  badge?: string | undefined;
   children: ReactNode;
 }) {
   const [mobileOpen, setMobileOpen] = useState(false);

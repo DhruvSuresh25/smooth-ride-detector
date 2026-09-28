@@ -40,8 +40,8 @@ function LoginPage() {
   async function handleSubmit(event: React.FormEvent) {
     event.preventDefault();
     const next: Record<string, string> = {};
-    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) next.email = "Enter a valid email address.";
-    if (!password) next.password = "Password is required.";
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) next["email"] = "Enter a valid email address.";
+    if (!password) next["password"] = "Password is required.";
     setErrors(next);
     if (Object.keys(next).length) return;
 
@@ -80,9 +80,9 @@ function LoginPage() {
             placeholder="you@example.com"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
-            aria-invalid={!!errors.email}
+            aria-invalid={!!errors["email"]}
           />
-          {errors.email && <p className="text-xs font-medium text-destructive">{errors.email}</p>}
+          {errors["email"] && <p className="text-xs font-medium text-destructive">{errors["email"]}</p>}
         </div>
 
         <PasswordField
@@ -90,7 +90,7 @@ function LoginPage() {
           label="Password"
           value={password}
           onChange={setPassword}
-          error={errors.password}
+          error={errors["password"]}
         />
 
         <div className="flex items-center justify-between gap-3">

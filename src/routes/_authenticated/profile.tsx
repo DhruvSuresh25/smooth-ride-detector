@@ -106,10 +106,10 @@ function ProfilePage() {
 
   async function updatePassword() {
     const next: Record<string, string> = {};
-    if (!currentPassword) next.current = "Enter your current password.";
-    if (newPassword.length < 8) next.next = "Password must be at least 8 characters.";
-    else if (passwordScore(newPassword) < 2) next.next = "Add numbers or symbols to strengthen it.";
-    if (confirmPassword !== newPassword) next.confirm = "Passwords do not match.";
+    if (!currentPassword) next["current"] = "Enter your current password.";
+    if (newPassword.length < 8) next["next"] = "Password must be at least 8 characters.";
+    else if (passwordScore(newPassword) < 2) next["next"] = "Add numbers or symbols to strengthen it.";
+    if (confirmPassword !== newPassword) next["confirm"] = "Passwords do not match.";
     setPasswordErrors(next);
     if (Object.keys(next).length) return;
 
@@ -135,10 +135,11 @@ function ProfilePage() {
     key: "email_notifications" | "browser_notifications",
     value: boolean,
   ) {
-    const { error } = await supabase
-      .from("profiles")
-      .update({ [key]: value })
-      .eq("id", user!.id);
+    const patch =
+      key === "email_notifications"
+        ? { email_notifications: value }
+        : { browser_notifications: value };
+    const { error } = await supabase.from("profiles").update(patch).eq("id", user!.id);
     if (error) {
       toast.error("Could not save preference", { description: error.message });
       return;
@@ -224,14 +225,14 @@ function ProfilePage() {
                 label="Current password"
                 value={currentPassword}
                 onChange={setCurrentPassword}
-                error={passwordErrors.current}
+                error={passwordErrors["current"]}
               />
               <PasswordField
                 id="new-password"
                 label="New password"
                 value={newPassword}
                 onChange={setNewPassword}
-                error={passwordErrors.next}
+                error={passwordErrors["next"]}
                 showStrength
                 autoComplete="new-password"
               />
@@ -240,7 +241,7 @@ function ProfilePage() {
                 label="Confirm new password"
                 value={confirmPassword}
                 onChange={setConfirmPassword}
-                error={passwordErrors.confirm}
+                error={passwordErrors["confirm"]}
                 autoComplete="new-password"
               />
               <Button onClick={updatePassword} disabled={savingPassword}>

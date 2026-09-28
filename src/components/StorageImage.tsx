@@ -34,7 +34,7 @@ export function StorageImage({
   path?: string | null;
   alt: string;
   className?: string;
-  emptyLabel?: string;
+  emptyLabel?: string | undefined;
 }) {
   const { data, isLoading, isError } = useSignedUrl(path);
 

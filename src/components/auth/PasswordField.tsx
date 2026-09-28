@@ -38,10 +38,10 @@ export function PasswordField({
   label: string;
   value: string;
   onChange: (value: string) => void;
-  error?: string;
-  showStrength?: boolean;
-  autoComplete?: string;
-  placeholder?: string;
+  error?: string | undefined;
+  showStrength?: boolean | undefined;
+  autoComplete?: string | undefined;
+  placeholder?: string | undefined;
 }) {
   const [visible, setVisible] = useState(false);
   const score = passwordScore(value);
