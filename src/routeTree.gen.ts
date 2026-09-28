@@ -23,6 +23,8 @@ import { Route as AuthenticatedAdminAnalyticsRouteImport } from './routes/_authe
 import { Route as AuthenticatedAdminDashboardRouteImport } from './routes/_authenticated/admin.dashboard'
 import { Route as AuthenticatedReportsIndexRouteImport } from './routes/_authenticated/reports.index'
 import { Route as AuthenticatedReportsIdRouteImport } from './routes/_authenticated/reports.$id'
+import { Route as AuthenticatedAdminReportsIndexRouteImport } from './routes/_authenticated/admin.reports.index'
+import { Route as AuthenticatedAdminReportsIdRouteImport } from './routes/_authenticated/admin.reports.$id'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -96,6 +98,18 @@ const AuthenticatedReportsIdRoute = AuthenticatedReportsIdRouteImport.update({
   path: '/reports/$id',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const AuthenticatedAdminReportsIndexRoute =
+  AuthenticatedAdminReportsIndexRouteImport.update({
+    id: '/admin/reports/',
+    path: '/admin/reports/',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+const AuthenticatedAdminReportsIdRoute =
+  AuthenticatedAdminReportsIdRouteImport.update({
+    id: '/admin/reports/$id',
+    path: '/admin/reports/$id',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -111,6 +125,8 @@ export interface FileRoutesByFullPath {
   '/admin/dashboard': typeof AuthenticatedAdminDashboardRoute
   '/reports/$id': typeof AuthenticatedReportsIdRoute
   '/reports/': typeof AuthenticatedReportsIndexRoute
+  '/admin/reports/$id': typeof AuthenticatedAdminReportsIdRoute
+  '/admin/reports/': typeof AuthenticatedAdminReportsIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -126,6 +142,8 @@ export interface FileRoutesByTo {
   '/admin/dashboard': typeof AuthenticatedAdminDashboardRoute
   '/reports/$id': typeof AuthenticatedReportsIdRoute
   '/reports': typeof AuthenticatedReportsIndexRoute
+  '/admin/reports/$id': typeof AuthenticatedAdminReportsIdRoute
+  '/admin/reports': typeof AuthenticatedAdminReportsIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -143,6 +161,8 @@ export interface FileRoutesById {
   '/_authenticated/admin/dashboard': typeof AuthenticatedAdminDashboardRoute
   '/_authenticated/reports/$id': typeof AuthenticatedReportsIdRoute
   '/_authenticated/reports/': typeof AuthenticatedReportsIndexRoute
+  '/_authenticated/admin/reports/$id': typeof AuthenticatedAdminReportsIdRoute
+  '/_authenticated/admin/reports/': typeof AuthenticatedAdminReportsIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -160,6 +180,8 @@ export interface FileRouteTypes {
     | '/admin/dashboard'
     | '/reports/$id'
     | '/reports/'
+    | '/admin/reports/$id'
+    | '/admin/reports/'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -175,6 +197,8 @@ export interface FileRouteTypes {
     | '/admin/dashboard'
     | '/reports/$id'
     | '/reports'
+    | '/admin/reports/$id'
+    | '/admin/reports'
   id:
     | '__root__'
     | '/'
@@ -191,6 +215,8 @@ export interface FileRouteTypes {
     | '/_authenticated/admin/dashboard'
     | '/_authenticated/reports/$id'
     | '/_authenticated/reports/'
+    | '/_authenticated/admin/reports/$id'
+    | '/_authenticated/admin/reports/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -303,6 +329,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedReportsIdRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/admin/reports/': {
+      id: '/_authenticated/admin/reports/'
+      path: '/admin/reports'
+      fullPath: '/admin/reports/'
+      preLoaderRoute: typeof AuthenticatedAdminReportsIndexRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/admin/reports/$id': {
+      id: '/_authenticated/admin/reports/$id'
+      path: '/admin/reports/$id'
+      fullPath: '/admin/reports/$id'
+      preLoaderRoute: typeof AuthenticatedAdminReportsIdRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
   }
 }
 
@@ -314,6 +354,8 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedAdminDashboardRoute: typeof AuthenticatedAdminDashboardRoute
   AuthenticatedReportsIdRoute: typeof AuthenticatedReportsIdRoute
   AuthenticatedReportsIndexRoute: typeof AuthenticatedReportsIndexRoute
+  AuthenticatedAdminReportsIdRoute: typeof AuthenticatedAdminReportsIdRoute
+  AuthenticatedAdminReportsIndexRoute: typeof AuthenticatedAdminReportsIndexRoute
 }
 
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
@@ -324,6 +366,8 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedAdminDashboardRoute: AuthenticatedAdminDashboardRoute,
   AuthenticatedReportsIdRoute: AuthenticatedReportsIdRoute,
   AuthenticatedReportsIndexRoute: AuthenticatedReportsIndexRoute,
+  AuthenticatedAdminReportsIdRoute: AuthenticatedAdminReportsIdRoute,
+  AuthenticatedAdminReportsIndexRoute: AuthenticatedAdminReportsIndexRoute,
 }
 
 const AuthenticatedRouteRouteWithChildren =
