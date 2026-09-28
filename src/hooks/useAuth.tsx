@@ -94,6 +94,8 @@ export function useIsAdmin() {
   return useQuery({
     queryKey: ["is-admin", user?.id],
     enabled: !!user,
+    staleTime: 0,
+    refetchOnMount: "always",
     queryFn: async () => {
       const { data, error } = await supabase
         .from("user_roles")
