@@ -9,6 +9,8 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { supabase } from "@/integrations/supabase/client";
+import { getAuthIssue, type AuthIssue } from "@/lib/auth-errors";
+import { AuthIssueAlert } from "@/components/auth/AuthIssueAlert";
 
 export const Route = createFileRoute("/admin/login")({
   head: () => ({
@@ -34,15 +36,17 @@ function AdminLoginPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [submitting, setSubmitting] = useState(false);
+  const [authIssue, setAuthIssue] = useState<AuthIssue | null>(null);
 
   async function handleSubmit(event: React.FormEvent) {
     event.preventDefault();
     setSubmitting(true);
-    const { data, error } = await supabase.auth.signInWithPassword({ email, password });
+    setAuthIssue(null);
+    const { data, error } = await supabase.auth.signInWithPassword({ email: email.trim(), password });
 
     if (error || !data.user) {
       setSubmitting(false);
-      toast.error("Could not sign in", { description: error?.message });
+      setAuthIssue(getAuthIssue(error));
       return;
     }
 
@@ -93,6 +97,7 @@ function AdminLoginPage() {
           />
         </div>
         <PasswordField id="admin-password" label="Password" value={password} onChange={setPassword} />
+        {authIssue ? <AuthIssueAlert issue={authIssue} /> : null}
         <Button type="submit" className="w-full" disabled={submitting}>
           {submitting && <Loader2 className="size-4 animate-spin" aria-hidden="true" />}
           Sign In

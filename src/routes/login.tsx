@@ -4,13 +4,15 @@ import { Loader2 } from "lucide-react";
 import { toast } from "sonner";
 
 import { AuthLayout } from "@/components/auth/AuthLayout";
+import { AuthIssueAlert } from "@/components/auth/AuthIssueAlert";
 import { PasswordField } from "@/components/auth/PasswordField";
+import { SignInAssistant } from "@/components/auth/SignInAssistant";
 import { Button } from "@/components/ui/button";
-import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
+import { getAuthIssue, type AuthIssue } from "@/lib/auth-errors";
 
 export const Route = createFileRoute("/login")({
   head: () => ({
@@ -29,9 +31,10 @@ function LoginPage() {
   const { user } = useAuth();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [remember, setRemember] = useState(true);
   const [errors, setErrors] = useState<Record<string, string>>({});
+  const [authIssue, setAuthIssue] = useState<AuthIssue | null>(null);
   const [submitting, setSubmitting] = useState(false);
+  const [resending, setResending] = useState(false);
 
   useEffect(() => {
     if (user) navigate({ to: "/dashboard", replace: true });
@@ -46,15 +49,48 @@ function LoginPage() {
     if (Object.keys(next).length) return;
 
     setSubmitting(true);
-    const { error } = await supabase.auth.signInWithPassword({ email, password });
-    setSubmitting(false);
+    setAuthIssue(null);
+    try {
+      const { data, error } = await supabase.auth.signInWithPassword({ email: email.trim(), password });
+      if (error || !data.session || !data.user) {
+        setAuthIssue(getAuthIssue(error));
+        return;
+      }
 
+      const { data: profile, error: profileError } = await supabase
+        .from("profiles")
+        .select("account_status")
+        .eq("id", data.user.id)
+        .maybeSingle();
+
+      if (!profileError && profile?.account_status === "suspended") {
+        await supabase.auth.signOut();
+        setAuthIssue(getAuthIssue({ code: "user_banned" }));
+        return;
+      }
+
+      toast.success("Welcome back");
+      await navigate({ to: "/dashboard", replace: true });
+    } catch (error) {
+      setAuthIssue(getAuthIssue(error));
+    } finally {
+      setSubmitting(false);
+    }
+  }
+
+  async function resendConfirmation() {
+    setResending(true);
+    const { error } = await supabase.auth.resend({
+      type: "signup",
+      email: email.trim(),
+      options: { emailRedirectTo: `${window.location.origin}/login` },
+    });
+    setResending(false);
     if (error) {
-      toast.error("Could not sign in", { description: error.message });
+      setAuthIssue(getAuthIssue(error));
       return;
     }
-    toast.success("Welcome back");
-    navigate({ to: "/dashboard" });
+    toast.success("Confirmation email sent", { description: "Check your inbox and spam folder." });
   }
 
   return (
@@ -79,7 +115,10 @@ function LoginPage() {
             autoComplete="email"
             placeholder="you@example.com"
             value={email}
-            onChange={(e) => setEmail(e.target.value)}
+            onChange={(e) => {
+              setEmail(e.target.value);
+              setAuthIssue(null);
+            }}
             aria-invalid={!!errors["email"]}
           />
           {errors["email"] && <p className="text-xs font-medium text-destructive">{errors["email"]}</p>}
@@ -89,28 +128,34 @@ function LoginPage() {
           id="password"
           label="Password"
           value={password}
-          onChange={setPassword}
+          onChange={(value) => {
+            setPassword(value);
+            setAuthIssue(null);
+          }}
           error={errors["password"]}
         />
 
-        <div className="flex items-center justify-between gap-3">
-          <label className="flex items-center gap-2 text-sm text-muted-foreground">
-            <Checkbox
-              checked={remember}
-              onCheckedChange={(checked) => setRemember(checked === true)}
-            />
-            Remember me
-          </label>
+        <div className="flex justify-end">
           <Link to="/forgot-password" className="text-sm font-medium text-primary hover:underline">
             Forgot password?
           </Link>
         </div>
+
+        {authIssue ? (
+          <AuthIssueAlert
+            issue={authIssue}
+            onResendConfirmation={authIssue.kind === "email_unconfirmed" ? resendConfirmation : undefined}
+            resending={resending}
+          />
+        ) : null}
 
         <Button type="submit" className="w-full" disabled={submitting}>
           {submitting && <Loader2 className="size-4 animate-spin" aria-hidden="true" />}
           Sign In
         </Button>
       </form>
+
+      <SignInAssistant issue={authIssue} />
 
       <p className="text-sm text-muted-foreground">
         Road maintenance staff can{" "}

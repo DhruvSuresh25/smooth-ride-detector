@@ -1,5 +1,5 @@
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { useNavigate } from "@tanstack/react-router";
+import { useNavigate, useRouter } from "@tanstack/react-router";
 import type { Session, User } from "@supabase/supabase-js";
 import { createContext, useContext, useEffect, useState, type ReactNode } from "react";
 
@@ -32,23 +32,34 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [session, setSession] = useState<Session | null>(null);
   const [loading, setLoading] = useState(true);
   const queryClient = useQueryClient();
+  const router = useRouter();
 
   useEffect(() => {
+    let active = true;
+    let sawAuthEvent = false;
     const { data: sub } = supabase.auth.onAuthStateChange((event, nextSession) => {
+      if (!active) return;
+      sawAuthEvent = true;
       setSession(nextSession);
       setLoading(false);
       if (event === "SIGNED_IN" || event === "SIGNED_OUT" || event === "USER_UPDATED") {
-        if (event !== "SIGNED_OUT") queryClient.invalidateQueries();
+        void router.invalidate();
+        if (event === "SIGNED_OUT") queryClient.clear();
+        else void queryClient.invalidateQueries();
       }
     });
 
     supabase.auth.getSession().then(({ data }) => {
+      if (!active || sawAuthEvent) return;
       setSession(data.session);
       setLoading(false);
     });
 
-    return () => sub.subscription.unsubscribe();
-  }, [queryClient]);
+    return () => {
+      active = false;
+      sub.subscription.unsubscribe();
+    };
+  }, [queryClient, router]);
 
   return (
     <AuthContext.Provider value={{ session, user: session?.user ?? null, loading }}>
@@ -70,7 +81,7 @@ export function useProfile() {
       const { data, error } = await supabase
         .from("profiles")
         .select("*")
-        .eq("id", user!.id)
+        .eq("id", user?.id ?? "")
         .maybeSingle();
       if (error) throw error;
       return data as Profile | null;
@@ -87,7 +98,7 @@ export function useIsAdmin() {
       const { data, error } = await supabase
         .from("user_roles")
         .select("role")
-        .eq("user_id", user!.id)
+        .eq("user_id", user?.id ?? "")
         .eq("role", "admin")
         .maybeSingle();
       if (error) throw error;

@@ -4,12 +4,14 @@ import { Loader2 } from "lucide-react";
 import { toast } from "sonner";
 
 import { AuthLayout } from "@/components/auth/AuthLayout";
+import { AuthIssueAlert } from "@/components/auth/AuthIssueAlert";
 import { PasswordField, passwordScore } from "@/components/auth/PasswordField";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
+import { getAuthIssue, type AuthIssue } from "@/lib/auth-errors";
 
 export const Route = createFileRoute("/register")({
   head: () => ({
@@ -37,6 +39,7 @@ function RegisterPage() {
   const [password, setPassword] = useState("");
   const [confirm, setConfirm] = useState("");
   const [errors, setErrors] = useState<Record<string, string>>({});
+  const [authIssue, setAuthIssue] = useState<AuthIssue | null>(null);
   const [submitting, setSubmitting] = useState(false);
   const [checkEmail, setCheckEmail] = useState(false);
 
@@ -50,35 +53,45 @@ function RegisterPage() {
     if (!fullName.trim()) next["fullName"] = "Full name is required.";
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) next["email"] = "Enter a valid email address.";
     if (password.length < 8) next["password"] = "Password must be at least 8 characters.";
-    else if (passwordScore(password) < 2) next["password"] = "Add numbers or symbols to strengthen it.";
     if (confirm !== password) next["confirm"] = "Passwords do not match.";
     setErrors(next);
     if (Object.keys(next).length) return;
 
     setSubmitting(true);
-    const { data, error } = await supabase.auth.signUp({
-      email,
-      password,
-      options: {
-        emailRedirectTo: window.location.origin,
-        data: { full_name: fullName.trim() },
-      },
-    });
-    setSubmitting(false);
+    setAuthIssue(null);
+    try {
+      const { data, error } = await supabase.auth.signUp({
+        email: email.trim(),
+        password,
+        options: {
+          emailRedirectTo: `${window.location.origin}/login`,
+          data: { full_name: fullName.trim() },
+        },
+      });
 
-    if (error) {
-      toast.error("Could not create account", { description: error.message });
-      return;
+      if (error) {
+        setAuthIssue(getAuthIssue(error, "sign-up"));
+        return;
+      }
+
+      if (data.user?.identities?.length === 0) {
+        setAuthIssue(getAuthIssue({ code: "user_already_exists" }, "sign-up"));
+        return;
+      }
+
+      if (!data.session) {
+        setCheckEmail(true);
+        toast.success("Account created", { description: "Check your email to confirm it." });
+        return;
+      }
+
+      toast.success("Account created", { description: "Welcome to DriveSafe Vision." });
+      await navigate({ to: "/dashboard", replace: true });
+    } catch (error) {
+      setAuthIssue(getAuthIssue(error, "sign-up"));
+    } finally {
+      setSubmitting(false);
     }
-
-    if (!data.session) {
-      setCheckEmail(true);
-      toast.success("Account created", { description: "Check your email to confirm it." });
-      return;
-    }
-
-    toast.success("Account created", { description: "Welcome to DriveSafe Vision." });
-    navigate({ to: "/dashboard" });
   }
 
   if (checkEmail) {
@@ -131,7 +144,10 @@ function RegisterPage() {
             autoComplete="email"
             placeholder="you@example.com"
             value={email}
-            onChange={(e) => setEmail(e.target.value)}
+            onChange={(e) => {
+              setEmail(e.target.value);
+              setAuthIssue(null);
+            }}
             aria-invalid={!!errors["email"]}
           />
           {errors["email"] && <p className="text-xs font-medium text-destructive">{errors["email"]}</p>}
@@ -146,6 +162,8 @@ function RegisterPage() {
           showStrength
           autoComplete="new-password"
         />
+
+        {authIssue ? <AuthIssueAlert issue={authIssue} /> : null}
 
         <PasswordField
           id="confirm"
