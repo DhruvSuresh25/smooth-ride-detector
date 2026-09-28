@@ -47,11 +47,11 @@ function RegisterPage() {
   async function handleSubmit(event: React.FormEvent) {
     event.preventDefault();
     const next: Record<string, string> = {};
-    if (!fullName.trim()) next.fullName = "Full name is required.";
-    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) next.email = "Enter a valid email address.";
-    if (password.length < 8) next.password = "Password must be at least 8 characters.";
-    else if (passwordScore(password) < 2) next.password = "Add numbers or symbols to strengthen it.";
-    if (confirm !== password) next.confirm = "Passwords do not match.";
+    if (!fullName.trim()) next["fullName"] = "Full name is required.";
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) next["email"] = "Enter a valid email address.";
+    if (password.length < 8) next["password"] = "Password must be at least 8 characters.";
+    else if (passwordScore(password) < 2) next["password"] = "Add numbers or symbols to strengthen it.";
+    if (confirm !== password) next["confirm"] = "Passwords do not match.";
     setErrors(next);
     if (Object.keys(next).length) return;
 
@@ -116,10 +116,10 @@ function RegisterPage() {
             placeholder="Jane Fernandes"
             value={fullName}
             onChange={(e) => setFullName(e.target.value)}
-            aria-invalid={!!errors.fullName}
+            aria-invalid={!!errors["fullName"]}
           />
-          {errors.fullName && (
-            <p className="text-xs font-medium text-destructive">{errors.fullName}</p>
+          {errors["fullName"] && (
+            <p className="text-xs font-medium text-destructive">{errors["fullName"]}</p>
           )}
         </div>
 
@@ -132,9 +132,9 @@ function RegisterPage() {
             placeholder="you@example.com"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
-            aria-invalid={!!errors.email}
+            aria-invalid={!!errors["email"]}
           />
-          {errors.email && <p className="text-xs font-medium text-destructive">{errors.email}</p>}
+          {errors["email"] && <p className="text-xs font-medium text-destructive">{errors["email"]}</p>}
         </div>
 
         <PasswordField
@@ -142,7 +142,7 @@ function RegisterPage() {
           label="Password"
           value={password}
           onChange={setPassword}
-          error={errors.password}
+          error={errors["password"]}
           showStrength
           autoComplete="new-password"
         />
@@ -152,7 +152,7 @@ function RegisterPage() {
           label="Confirm password"
           value={confirm}
           onChange={setConfirm}
-          error={errors.confirm}
+          error={errors["confirm"]}
           autoComplete="new-password"
         />
 

@@ -39,9 +39,9 @@ function ResetPasswordPage() {
   async function handleSubmit(event: React.FormEvent) {
     event.preventDefault();
     const next: Record<string, string> = {};
-    if (password.length < 8) next.password = "Password must be at least 8 characters.";
-    else if (passwordScore(password) < 2) next.password = "Add numbers or symbols to strengthen it.";
-    if (confirm !== password) next.confirm = "Passwords do not match.";
+    if (password.length < 8) next["password"] = "Password must be at least 8 characters.";
+    else if (passwordScore(password) < 2) next["password"] = "Add numbers or symbols to strengthen it.";
+    if (confirm !== password) next["confirm"] = "Passwords do not match.";
     setErrors(next);
     if (Object.keys(next).length) return;
 
@@ -84,7 +84,7 @@ function ResetPasswordPage() {
           label="New password"
           value={password}
           onChange={setPassword}
-          error={errors.password}
+          error={errors["password"]}
           showStrength
           autoComplete="new-password"
         />
@@ -93,7 +93,7 @@ function ResetPasswordPage() {
           label="Confirm new password"
           value={confirm}
           onChange={setConfirm}
-          error={errors.confirm}
+          error={errors["confirm"]}
           autoComplete="new-password"
         />
         <Button type="submit" className="w-full" disabled={submitting}>
