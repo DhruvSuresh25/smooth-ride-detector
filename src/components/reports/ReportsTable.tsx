@@ -23,6 +23,7 @@ export function ReportsTable({
   detailBase: "/reports" | "/admin/reports";
   showSubmitter?: boolean;
 }) {
+  const detailTo = detailBase === "/admin/reports" ? "/admin/reports/$id" : "/reports/$id";
   return (
     <>
       {/* Desktop table */}
@@ -71,7 +72,7 @@ export function ReportsTable({
                 </TableCell>
                 <TableCell className="text-right">
                   <Button asChild variant="outline" size="sm" className="gap-1.5">
-                    <Link to={`${detailBase}/$id`} params={{ id: report.id }}>
+                    <Link to={detailTo} params={{ id: report.id }}>
                       <Eye className="size-3.5" aria-hidden="true" /> View
                     </Link>
                   </Button>
@@ -104,7 +105,7 @@ export function ReportsTable({
               </span>
             </div>
             <Button asChild variant="outline" size="sm" className="mt-3 w-full">
-              <Link to={`${detailBase}/$id`} params={{ id: report.id }}>
+              <Link to={detailTo} params={{ id: report.id }}>
                 View details
               </Link>
             </Button>
