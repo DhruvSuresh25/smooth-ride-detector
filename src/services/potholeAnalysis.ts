@@ -2,7 +2,7 @@
  * Pothole analysis service.
  *
  * This is the ONLY place that talks to a detection model. Today it runs a
- * deterministic simulated detector in the browser and draws bounding boxes onto
+ * AI vision check on the server (see pothole-vision.server.ts) and draws bounding boxes onto
  * a canvas to produce the annotated image.
  *
  * To connect a real model (YOLO, Roboflow, Hugging Face, or a custom Python
@@ -11,6 +11,7 @@
  * the app needs to change.
  */
 import type { Severity } from "@/lib/constants";
+import { analyzePotholePhoto } from "@/lib/pothole-vision.functions";
 
 export type Detection = {
   x: number; // 0..1 relative to image width
@@ -47,32 +48,7 @@ export const PROGRESS_STAGES: ProgressStage[] = [
   "Generating report",
 ];
 
-export const isDetectionApiConfigured = false;
-
-/** Stable pseudo-random generator so the same file yields the same reading. */
-function seededRandom(seed: number) {
-  let value = seed % 2147483647;
-  if (value <= 0) value += 2147483646;
-  return () => {
-    value = (value * 16807) % 2147483647;
-    return (value - 1) / 2147483646;
-  };
-}
-
-function seedFromFile(file: File) {
-  const key = `${file.name}:${file.size}:${file.lastModified}`;
-  let hash = 7;
-  for (let i = 0; i < key.length; i += 1) hash = (hash * 31 + key.charCodeAt(i)) % 2147483647;
-  return hash;
-}
-
-function severityFor(area: number, count: number): Severity {
-  const score = area * 100 + count * 4;
-  if (score > 26) return "Critical";
-  if (score > 17) return "High";
-  if (score > 9) return "Medium";
-  return "Low";
-}
+export const isDetectionApiConfigured = true;
 
 const severityStroke: Record<Severity, string> = {
   Low: "#2e9e63",
@@ -154,55 +130,46 @@ export async function analyzeRoadImage(
   file: File,
   onProgress?: (stage: ProgressStage) => void,
 ): Promise<AnalysisResult> {
-  const rand = seededRandom(seedFromFile(file));
-
   onProgress?.("Uploading image");
   const img = await loadImage(file);
-  await wait(500);
+  const dataUrl = toDataUrl(img, 1280);
 
   onProgress?.("Detecting potholes");
-  const potholeCount = 1 + Math.floor(rand() * 3);
-  const detections: Detection[] = Array.from({ length: potholeCount }, () => {
-    const w = 0.14 + rand() * 0.24;
-    const h = 0.1 + rand() * 0.2;
-    return {
-      x: Math.min(0.96 - w, 0.04 + rand() * 0.6),
-      y: Math.min(0.94 - h, 0.3 + rand() * 0.45),
-      width: w,
-      height: h,
-      confidence: 0.74 + rand() * 0.24,
-    };
-  });
-  await wait(700);
+  const response = await analyzePotholePhoto({ data: { image: dataUrl } });
+  if (!response.ok) throw new Error(response.error);
+  const r = response.result;
+  if (!r.isRoad) throw new Error("This photo doesn't look like a road. Please upload a clear photo of the road surface.");
+  if (r.potholeCount === 0 && r.detections.length === 0) {
+    throw new Error("No potholes were found in this photo. Try a closer, clearer photo of the damaged area.");
+  }
 
   onProgress?.("Estimating severity");
-  const largest = detections.reduce((a, b) => (a.width * a.height > b.width * b.height ? a : b));
-  const severity = severityFor(largest.width * largest.height, potholeCount);
-  const centerX = largest.x + largest.width / 2;
-  const roadPosition = centerX < 0.36 ? "Left" : centerX > 0.64 ? "Right" : "Center";
-  await wait(500);
+  const detections = r.detections;
 
   onProgress?.("Generating report");
-  const annotated = await drawAnnotations(img, detections, severity);
-
-  const confidence =
-    (detections.reduce((sum, d) => sum + d.confidence, 0) / detections.length) * 100;
+  const annotated = await drawAnnotations(img, detections, r.severity);
 
   return {
-    potholeCount,
-    severity,
-    confidence: Math.round(confidence * 10) / 10,
-    estimatedWidth: Math.round(largest.width * 320),
-    estimatedHeight: Math.round(largest.height * 210),
-    roadPosition,
+    potholeCount: Math.max(r.potholeCount, detections.length),
+    severity: r.severity,
+    confidence: r.confidence,
+    estimatedWidth: r.estimatedWidth,
+    estimatedHeight: r.estimatedHeight,
+    roadPosition: r.roadPosition,
     detections,
     annotatedImageBlob: annotated.blob,
     annotatedImagePreview: annotated.preview,
-    simulated: !isDetectionApiConfigured,
+    simulated: false,
     analyzedAt: new Date().toISOString(),
   };
 }
 
-function wait(ms: number) {
-  return new Promise((resolve) => setTimeout(resolve, ms));
+function toDataUrl(img: HTMLImageElement, maxEdge: number) {
+  const scale = Math.min(1, maxEdge / Math.max(img.naturalWidth, img.naturalHeight));
+  const canvas = document.createElement("canvas");
+  canvas.width = Math.round(img.naturalWidth * scale);
+  canvas.height = Math.round(img.naturalHeight * scale);
+  canvas.getContext("2d")?.drawImage(img, 0, 0, canvas.width, canvas.height);
+  return canvas.toDataURL("image/jpeg", 0.85);
 }
+
