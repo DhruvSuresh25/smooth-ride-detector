@@ -281,7 +281,7 @@ function AdminUsersPage() {
               Delete account
             </AlertDialogAction>
           </AlertDialogFooter>
-        </AlertDialogFooter>
+        </AlertDialogContent>
       </AlertDialog>
     </AdminShell>
   );
