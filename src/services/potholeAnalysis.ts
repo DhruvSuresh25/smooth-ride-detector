@@ -173,6 +173,3 @@ function toDataUrl(img: HTMLImageElement, maxEdge: number) {
   return canvas.toDataURL("image/jpeg", 0.85);
 }
 
-function wait(ms: number) {
-  return new Promise((resolve) => setTimeout(resolve, ms));
-}
