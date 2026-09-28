@@ -93,7 +93,7 @@ export async function analyzePotholeImage(imageDataUrl: string) {
           role: "user",
           content: [
             { type: "text", text: "Analyse this road photo for potholes." },
-            { type: "image", image: new URL(imageDataUrl) },
+            { type: "file", mediaType: "image/jpeg", data: new URL(imageDataUrl) },
           ],
         },
       ],
