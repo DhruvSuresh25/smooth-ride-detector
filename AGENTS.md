@@ -8,3 +8,5 @@
 > Commits you push to the connected branch sync back to Lovable and show up in
 > the editor, so keep the branch in a working state.
 <!-- LOVABLE:END -->
+
+- Keep sign-in diagnostics in `auth-errors.ts` and AI recovery behind a public `createServerFn`; this centralizes safe messaging and keeps prompts and credentials server-side.

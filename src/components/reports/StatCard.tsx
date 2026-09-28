@@ -13,7 +13,7 @@ export function StatCard({
   value: string | number;
   icon?: ComponentType<{ className?: string }>;
   tone?: "default" | "low" | "medium" | "high" | "critical" | "primary";
-  hint?: string;
+  hint?: string | undefined;
 }) {
   const tones: Record<string, string> = {
     default: "bg-muted text-muted-foreground",
