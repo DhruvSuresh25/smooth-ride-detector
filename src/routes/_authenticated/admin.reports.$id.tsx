@@ -23,6 +23,8 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { STATUSES, formatDateTime, type ReportStatus } from "@/lib/constants";
 import { useReport, useReportHistory } from "@/lib/reports";
+import { useServerFn } from "@tanstack/react-start";
+import { notifyReportUpdate } from "@/lib/report-notify.functions";
 
 export const Route = createFileRoute("/_authenticated/admin/reports/$id")({
   staticData: { sitemap: false },
@@ -51,6 +53,7 @@ function AdminReportDetailPage() {
   const [status, setStatus] = useState<ReportStatus>("Pending");
   const [notes, setNotes] = useState("");
   const [saving, setSaving] = useState(false);
+  const notify = useServerFn(notifyReportUpdate);
 
   useEffect(() => {
     if (report) {
@@ -94,8 +97,15 @@ function AdminReportDetailPage() {
       queryClient.invalidateQueries({ queryKey: ["report-history", report.id] }),
       queryClient.invalidateQueries({ queryKey: ["reports"] }),
     ]);
+    let emailNote = "The citizen has been emailed.";
+    try {
+      const res = await notify({ data: { reportId: report.id } });
+      if (!res.sent) emailNote = "No email sent (citizen turned off emails or unsubscribed).";
+    } catch {
+      emailNote = "Saved, but the email to the citizen could not be sent.";
+    }
     setSaving(false);
-    toast.success("Report updated", { description: `Status set to ${status}.` });
+    toast.success("Report updated", { description: `Status set to ${status}. ${emailNote}` });
   }
 
   if (isLoading) {
