@@ -36,6 +36,7 @@ import {
 } from "@/services/potholeAnalysis";
 
 export const Route = createFileRoute("/_authenticated/analyze")({
+  staticData: { sitemap: false },
   head: () => ({
     meta: [
       { title: "Analyze Road Image — DriveSafe Vision" },

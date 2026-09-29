@@ -12,6 +12,7 @@ import { StatCard } from "@/components/reports/StatCard";
 import { averageResolutionDays, countByStatus, useAllReports } from "@/lib/reports";
 
 export const Route = createFileRoute("/_authenticated/admin/analytics")({
+  staticData: { sitemap: false },
   head: () => ({
     meta: [
       { title: "Analytics — DriveSafe Vision Admin" },

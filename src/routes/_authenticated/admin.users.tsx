@@ -39,6 +39,7 @@ import { formatDate } from "@/lib/constants";
 import { useAllUsers } from "@/lib/reports";
 
 export const Route = createFileRoute("/_authenticated/admin/users")({
+  staticData: { sitemap: false },
   head: () => ({
     meta: [
       { title: "Users — DriveSafe Vision Admin" },

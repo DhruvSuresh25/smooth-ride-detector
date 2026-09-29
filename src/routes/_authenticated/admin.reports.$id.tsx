@@ -25,6 +25,7 @@ import { STATUSES, formatDateTime, type ReportStatus } from "@/lib/constants";
 import { useReport, useReportHistory } from "@/lib/reports";
 
 export const Route = createFileRoute("/_authenticated/admin/reports/$id")({
+  staticData: { sitemap: false },
   head: () => ({
     meta: [
       { title: "Manage report — DriveSafe Vision Admin" },

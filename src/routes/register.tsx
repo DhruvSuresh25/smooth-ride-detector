@@ -14,6 +14,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { getAuthIssue, type AuthIssue } from "@/lib/auth-errors";
 
 export const Route = createFileRoute("/register")({
+  staticData: { sitemap: true },
   head: () => ({
     meta: [
       { title: "Create your account — DriveSafe Vision" },

@@ -18,6 +18,7 @@ import { SEVERITIES, STATUSES } from "@/lib/constants";
 import { useMyReports } from "@/lib/reports";
 
 export const Route = createFileRoute("/_authenticated/reports/")({
+  staticData: { sitemap: false },
   head: () => ({
     meta: [
       { title: "My Reports — DriveSafe Vision" },

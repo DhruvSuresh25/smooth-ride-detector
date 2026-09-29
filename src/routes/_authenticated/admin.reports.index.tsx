@@ -18,6 +18,7 @@ import { SEVERITIES, STATUSES } from "@/lib/constants";
 import { useAllReports } from "@/lib/reports";
 
 export const Route = createFileRoute("/_authenticated/admin/reports/")({
+  staticData: { sitemap: false },
   head: () => ({
     meta: [
       { title: "All Reports — DriveSafe Vision Admin" },

@@ -14,6 +14,7 @@ import { getAuthIssue, type AuthIssue } from "@/lib/auth-errors";
 import { AuthIssueAlert } from "@/components/auth/AuthIssueAlert";
 
 export const Route = createFileRoute("/admin/login")({
+  staticData: { sitemap: false },
   head: () => ({
     meta: [
       { title: "Administrator sign in — DriveSafe Vision" },

@@ -11,6 +11,7 @@ import { formatDateTime } from "@/lib/constants";
 import { useReport, useReportHistory } from "@/lib/reports";
 
 export const Route = createFileRoute("/_authenticated/reports/$id")({
+  staticData: { sitemap: false },
   head: () => ({
     meta: [
       { title: "Report details — DriveSafe Vision" },

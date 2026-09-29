@@ -9,9 +9,11 @@ import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
 
 export const Route = createFileRoute("/reset-password")({
+  staticData: { sitemap: false },
   head: () => ({
     meta: [
       { title: "Set a new password — DriveSafe Vision" },
+      { name: "robots", content: "noindex" },
       { name: "description", content: "Choose a new password for your account." },
       { property: "og:title", content: "Set a new password — DriveSafe Vision" },
       { property: "og:description", content: "Choose a new password for your account." },

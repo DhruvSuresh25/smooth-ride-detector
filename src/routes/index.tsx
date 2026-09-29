@@ -20,6 +20,7 @@ import { APP_NAME, APP_TAGLINE, ANALYSIS_DISCLAIMER } from "@/lib/constants";
 import { useAuth } from "@/hooks/useAuth";
 
 export const Route = createFileRoute("/")({
+  staticData: { sitemap: true },
   head: () => ({
     meta: [
       { title: "DriveSafe Vision — Detect potholes, improve roads" },
