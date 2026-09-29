@@ -30,6 +30,8 @@ import { Route as AuthenticatedReportsIndexRouteImport } from './routes/_authent
 import { Route as AuthenticatedReportsIdRouteImport } from './routes/_authenticated/reports.$id'
 import { Route as AuthenticatedAdminReportsIndexRouteImport } from './routes/_authenticated/admin.reports.index'
 import { Route as AuthenticatedAdminReportsIdRouteImport } from './routes/_authenticated/admin.reports.$id'
+import { Route as LovableEmailAuthPreviewRouteImport } from './routes/lovable/email/auth/preview'
+import { Route as LovableEmailAuthWebhookRouteImport } from './routes/lovable/email/auth/webhook'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -142,6 +144,16 @@ const AuthenticatedAdminReportsIdRoute =
     path: '/admin/reports/$id',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
+const LovableEmailAuthPreviewRoute = LovableEmailAuthPreviewRouteImport.update({
+  id: '/lovable/email/auth/preview',
+  path: '/lovable/email/auth/preview',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const LovableEmailAuthWebhookRoute = LovableEmailAuthWebhookRouteImport.update({
+  id: '/lovable/email/auth/webhook',
+  path: '/lovable/email/auth/webhook',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -163,6 +175,8 @@ export interface FileRoutesByFullPath {
   '/reports/$id': typeof AuthenticatedReportsIdRoute
   '/reports/': typeof AuthenticatedReportsIndexRoute
   '/admin/reports/$id': typeof AuthenticatedAdminReportsIdRoute
+  '/lovable/email/auth/preview': typeof LovableEmailAuthPreviewRoute
+  '/lovable/email/auth/webhook': typeof LovableEmailAuthWebhookRoute
   '/admin/reports/': typeof AuthenticatedAdminReportsIndexRoute
 }
 export interface FileRoutesByTo {
@@ -185,6 +199,8 @@ export interface FileRoutesByTo {
   '/reports/$id': typeof AuthenticatedReportsIdRoute
   '/reports': typeof AuthenticatedReportsIndexRoute
   '/admin/reports/$id': typeof AuthenticatedAdminReportsIdRoute
+  '/lovable/email/auth/preview': typeof LovableEmailAuthPreviewRoute
+  '/lovable/email/auth/webhook': typeof LovableEmailAuthWebhookRoute
   '/admin/reports': typeof AuthenticatedAdminReportsIndexRoute
 }
 export interface FileRoutesById {
@@ -209,6 +225,8 @@ export interface FileRoutesById {
   '/_authenticated/reports/$id': typeof AuthenticatedReportsIdRoute
   '/_authenticated/reports/': typeof AuthenticatedReportsIndexRoute
   '/_authenticated/admin/reports/$id': typeof AuthenticatedAdminReportsIdRoute
+  '/lovable/email/auth/preview': typeof LovableEmailAuthPreviewRoute
+  '/lovable/email/auth/webhook': typeof LovableEmailAuthWebhookRoute
   '/_authenticated/admin/reports/': typeof AuthenticatedAdminReportsIndexRoute
 }
 export interface FileRouteTypes {
@@ -233,6 +251,8 @@ export interface FileRouteTypes {
     | '/reports/$id'
     | '/reports/'
     | '/admin/reports/$id'
+    | '/lovable/email/auth/preview'
+    | '/lovable/email/auth/webhook'
     | '/admin/reports/'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -255,6 +275,8 @@ export interface FileRouteTypes {
     | '/reports/$id'
     | '/reports'
     | '/admin/reports/$id'
+    | '/lovable/email/auth/preview'
+    | '/lovable/email/auth/webhook'
     | '/admin/reports'
   id:
     | '__root__'
@@ -278,6 +300,8 @@ export interface FileRouteTypes {
     | '/_authenticated/reports/$id'
     | '/_authenticated/reports/'
     | '/_authenticated/admin/reports/$id'
+    | '/lovable/email/auth/preview'
+    | '/lovable/email/auth/webhook'
     | '/_authenticated/admin/reports/'
   fileRoutesById: FileRoutesById
 }
@@ -292,6 +316,8 @@ export interface RootRouteChildren {
   Char91DotwellKnownChar93OauthProtectedResourceRoute: typeof Char91DotwellKnownChar93OauthProtectedResourceRoute
   AdminLoginRoute: typeof AdminLoginRoute
   DotlovableOauthConsentRoute: typeof DotlovableOauthConsentRoute
+  LovableEmailAuthPreviewRoute: typeof LovableEmailAuthPreviewRoute
+  LovableEmailAuthWebhookRoute: typeof LovableEmailAuthWebhookRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -443,6 +469,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedAdminReportsIdRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/lovable/email/auth/preview': {
+      id: '/lovable/email/auth/preview'
+      path: '/lovable/email/auth/preview'
+      fullPath: '/lovable/email/auth/preview'
+      preLoaderRoute: typeof LovableEmailAuthPreviewRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/lovable/email/auth/webhook': {
+      id: '/lovable/email/auth/webhook'
+      path: '/lovable/email/auth/webhook'
+      fullPath: '/lovable/email/auth/webhook'
+      preLoaderRoute: typeof LovableEmailAuthWebhookRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -489,6 +529,8 @@ const rootRouteChildren: RootRouteChildren = {
     Char91DotwellKnownChar93OauthProtectedResourceRoute,
   AdminLoginRoute: AdminLoginRoute,
   DotlovableOauthConsentRoute: DotlovableOauthConsentRoute,
+  LovableEmailAuthPreviewRoute: LovableEmailAuthPreviewRoute,
+  LovableEmailAuthWebhookRoute: LovableEmailAuthWebhookRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
