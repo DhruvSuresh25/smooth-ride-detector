@@ -18,6 +18,7 @@ import { formatDate, initialsOf } from "@/lib/constants";
 import { useMyReports } from "@/lib/reports";
 
 export const Route = createFileRoute("/_authenticated/profile")({
+  staticData: { sitemap: false },
   head: () => ({
     meta: [
       { title: "Profile & Settings — DriveSafe Vision" },

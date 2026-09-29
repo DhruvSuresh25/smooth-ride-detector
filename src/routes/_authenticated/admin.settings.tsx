@@ -7,6 +7,7 @@ import { ANALYSIS_DISCLAIMER, APP_NAME, APP_TAGLINE, SEVERITIES, STATUSES } from
 import { isDetectionApiConfigured } from "@/services/potholeAnalysis";
 
 export const Route = createFileRoute("/_authenticated/admin/settings")({
+  staticData: { sitemap: false },
   head: () => ({
     meta: [
       { title: "Settings — DriveSafe Vision Admin" },

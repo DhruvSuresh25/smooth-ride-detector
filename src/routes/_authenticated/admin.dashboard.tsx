@@ -17,6 +17,7 @@ import { Button } from "@/components/ui/button";
 import { averageResolutionDays, countByStatus, useAllReports, useAllUsers } from "@/lib/reports";
 
 export const Route = createFileRoute("/_authenticated/admin/dashboard")({
+  staticData: { sitemap: false },
   head: () => ({
     meta: [
       { title: "Admin Overview — DriveSafe Vision" },

@@ -18,6 +18,7 @@ import { useProfile } from "@/hooks/useAuth";
 import { countByStatus, useMyReports } from "@/lib/reports";
 
 export const Route = createFileRoute("/_authenticated/dashboard")({
+  staticData: { sitemap: false },
   head: () => ({
     meta: [
       { title: "Dashboard — DriveSafe Vision" },
