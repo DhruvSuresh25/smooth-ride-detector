@@ -20,9 +20,11 @@ export type VisionResult = {
   summary: string;
 };
 
-const SYSTEM = `You are a road-damage inspector for DriveSafe Vision. Inspect the road photo and grade pothole damage.
+const SYSTEM = `You are a road-damage inspector for DriveSafe Vision. Inspect the ENTIRE road photo and grade pothole damage.
 
-Severity rubric (use the WORST damage visible):
+Scan the whole image systematically: the top/far-distance area, the middle, and the bottom/foreground, plus the left edge, centre and right edge. Potholes further away look smaller and appear higher in the frame — include them too. Do not focus only on the foreground.
+
+Severity rubric (use the WORST damage visible anywhere in the image):
 - Low: hairline cracks or a small shallow pothole under ~20 cm, no exposed base layer.
 - Medium: one or two potholes 20–50 cm wide, shallow (under ~5 cm deep), edges mostly intact.
 - High: potholes over ~50 cm, clearly deep (5–10 cm), exposed gravel/base, several potholes, or water-filled holes.
@@ -31,7 +33,7 @@ Do not under-grade. If unsure between two levels, pick the higher one.
 
 Reply with ONLY a JSON object, no markdown:
 {"isRoad":boolean,"potholeCount":integer,"severity":"Low"|"Medium"|"High"|"Critical","confidence":number 0-100,"estimatedWidthCm":number,"estimatedDepthCm":number,"roadPosition":"Left"|"Center"|"Right","detections":[{"x":0-1,"y":0-1,"width":0-1,"height":0-1,"confidence":0-1}],"summary":"one short sentence"}
-Detections are bounding boxes of each pothole, relative to image width/height, top-left origin, at most 8. If no road or no pothole is visible, return potholeCount 0 and an empty detections array.`;
+Detections are tight bounding boxes of EVERY pothole found anywhere in the image (near and far), relative to image width/height, top-left origin, at most 15. potholeCount must count all potholes in the whole image. If no road or no pothole is visible, return potholeCount 0 and an empty detections array.`;
 
 const clamp = (v: unknown, min: number, max: number, fallback: number) => {
   const n = typeof v === "number" && Number.isFinite(v) ? v : fallback;
@@ -47,7 +49,7 @@ function parse(text: string): VisionResult {
     : "Medium";
   const pos = raw["roadPosition"];
   const detections = (Array.isArray(raw["detections"]) ? raw["detections"] : [])
-    .slice(0, 8)
+    .slice(0, 15)
     .map((d: Record<string, unknown>) => {
       const x = clamp(d["x"], 0, 0.98, 0.3);
       const y = clamp(d["y"], 0, 0.98, 0.5);
@@ -92,8 +94,13 @@ export async function analyzePotholeImage(imageDataUrl: string) {
         {
           role: "user",
           content: [
-            { type: "text", text: "Analyse this road photo for potholes." },
-            { type: "file", mediaType: "image/jpeg", data: new URL(imageDataUrl) },
+            { type: "text", text: "Analyse this whole road photo for potholes — top, middle and bottom, left to right." },
+            {
+              type: "file",
+              mediaType: "image/jpeg",
+              data: new URL(imageDataUrl),
+              providerOptions: { openai: { imageDetail: "high" } },
+            },
           ],
         },
       ],
