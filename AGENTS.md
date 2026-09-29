@@ -10,3 +10,4 @@
 <!-- LOVABLE:END -->
 
 - Keep sign-in diagnostics in `auth-errors.ts` and AI recovery behind a public `createServerFn`; this centralizes safe messaging and keeps prompts and credentials server-side.
+- MCP server lives in src/lib/mcp/ with Supabase OAuth; tools use supabaseForUser so RLS runs as the caller.

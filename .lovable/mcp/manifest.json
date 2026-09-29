@@ -1,0 +1,93 @@
+{
+  "version": 1,
+  "sdk_version": "3.0.4",
+  "path": "/mcp",
+  "auth": {
+    "type": "oauth",
+    "issuer": "https://uhzlzcnnbqtoavosrlje.supabase.co/auth/v1",
+    "accepted_audiences": [
+      "authenticated"
+    ]
+  },
+  "mcp": {
+    "server": {
+      "name": "drivesafe-vision",
+      "version": "0.1.0",
+      "title": "DriveSafe Vision"
+    },
+    "tools": [
+      {
+        "name": "list_reports",
+        "title": "List pothole reports",
+        "description": "List pothole reports visible to the signed-in user (their own, or all reports for admins), newest first.",
+        "annotations": {
+          "readOnlyHint": true,
+          "idempotentHint": true,
+          "openWorldHint": false
+        },
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "status": {
+              "type": "string",
+              "enum": [
+                "Pending",
+                "Under Review",
+                "Action Taken",
+                "Resolved",
+                "Rejected"
+              ],
+              "description": "Only return reports with this status."
+            },
+            "severity": {
+              "type": "string",
+              "enum": [
+                "Low",
+                "Medium",
+                "High",
+                "Critical"
+              ],
+              "description": "Only this severity."
+            },
+            "limit": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 100,
+              "default": 20,
+              "description": "Maximum reports to return."
+            }
+          },
+          "additionalProperties": false,
+          "$schema": "http://json-schema.org/draft-07/schema#"
+        },
+        "outputSchema": null
+      },
+      {
+        "name": "get_report",
+        "title": "Get pothole report",
+        "description": "Get full details and status history for one pothole report by its number, e.g. RPT-0001.",
+        "annotations": {
+          "readOnlyHint": true,
+          "idempotentHint": true,
+          "openWorldHint": false
+        },
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "reportNumber": {
+              "type": "string",
+              "minLength": 1,
+              "description": "Report number such as RPT-0001."
+            }
+          },
+          "required": [
+            "reportNumber"
+          ],
+          "additionalProperties": false,
+          "$schema": "http://json-schema.org/draft-07/schema#"
+        },
+        "outputSchema": null
+      }
+    ]
+  }
+}
