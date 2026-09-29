@@ -14,6 +14,24 @@ export type Database = {
   }
   public: {
     Tables: {
+      ai_assist_usage: {
+        Row: {
+          client_hash: string
+          created_at: string
+          id: string
+        }
+        Insert: {
+          client_hash: string
+          created_at?: string
+          id?: string
+        }
+        Update: {
+          client_hash?: string
+          created_at?: string
+          id?: string
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           account_status: string
