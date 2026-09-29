@@ -24,7 +24,7 @@ export const Route = createFileRoute("/login")({
     ],
   }),
   validateSearch: (s: Record<string, unknown>): { next?: string } =>
-    typeof s["next"] === "string" && s["next"].startsWith("/") && !s["next"].startsWith("//")
+    typeof s["next"] === "string" && /^\/(?![\/\\])[^\\\s]*$/.test(s["next"])
       ? { next: s["next"] }
       : {},
   component: LoginPage,
@@ -35,7 +35,8 @@ function LoginPage() {
   const { user } = useAuth();
   const { next: nextPath } = Route.useSearch();
   const goNext = () =>
-    nextPath ? (window.location.href = nextPath) : navigate({ to: "/dashboard", replace: true });
+    nextPath && new URL(nextPath, window.location.origin).origin === window.location.origin
+      ? (window.location.href = new URL(nextPath, window.location.origin).href) : navigate({ to: "/dashboard", replace: true });
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [errors, setErrors] = useState<Record<string, string>>({});
