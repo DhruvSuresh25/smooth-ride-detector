@@ -8,6 +8,13 @@
       "when": 1790606475724,
       "tag": "0000_drivesafe_vision_schema",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1790665375886,
+      "tag": "0001_restrict_avatar_reads",
+      "breakpoints": true
     }
   ]
 }
