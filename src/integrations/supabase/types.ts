@@ -201,7 +201,15 @@ export type Database = {
       }
     }
     Views: {
-      [_ in never]: never
+      admins: {
+        Row: {
+          admin_since: string | null
+          email: string | null
+          full_name: string | null
+          user_id: string | null
+        }
+        Relationships: []
+      }
     }
     Functions: {
       has_role: {
