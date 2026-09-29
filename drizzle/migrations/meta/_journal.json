@@ -22,6 +22,13 @@
       "when": 1790665719972,
       "tag": "0002_ai_assist_rate_limit",
       "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1790672761642,
+      "tag": "0003_admins_view",
+      "breakpoints": true
     }
   ]
 }
