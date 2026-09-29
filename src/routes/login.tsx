@@ -23,12 +23,19 @@ export const Route = createFileRoute("/login")({
       { property: "og:description", content: "Sign in to submit and track pothole reports." },
     ],
   }),
+  validateSearch: (s: Record<string, unknown>): { next?: string } =>
+    typeof s["next"] === "string" && s["next"].startsWith("/") && !s["next"].startsWith("//")
+      ? { next: s["next"] }
+      : {},
   component: LoginPage,
 });
 
 function LoginPage() {
   const navigate = useNavigate();
   const { user } = useAuth();
+  const { next: nextPath } = Route.useSearch();
+  const goNext = () =>
+    nextPath ? (window.location.href = nextPath) : navigate({ to: "/dashboard", replace: true });
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [errors, setErrors] = useState<Record<string, string>>({});
@@ -37,7 +44,7 @@ function LoginPage() {
   const [resending, setResending] = useState(false);
 
   useEffect(() => {
-    if (user) navigate({ to: "/dashboard", replace: true });
+    if (user) void goNext();
   }, [user, navigate]);
 
   async function handleSubmit(event: React.FormEvent) {
@@ -70,7 +77,7 @@ function LoginPage() {
       }
 
       toast.success("Welcome back");
-      await navigate({ to: "/dashboard", replace: true });
+      await goNext();
     } catch (error) {
       setAuthIssue(getAuthIssue(error));
     } finally {
