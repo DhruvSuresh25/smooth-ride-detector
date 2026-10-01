@@ -153,7 +153,8 @@ function AnalyzePage() {
     setSubmitting(true);
     try {
       const stamp = `${Date.now()}`;
-      const originalPath = `${user.id}/${stamp}-original.${file.name.split(".").pop() ?? "jpg"}`;
+      const ext = file.type === "image/png" ? "png" : "jpg";
+      const originalPath = `${user.id}/${stamp}-original.${ext}`;
       const { error: originalError } = await supabase.storage
         .from("report-original-images")
         .upload(originalPath, file, { contentType: file.type });
