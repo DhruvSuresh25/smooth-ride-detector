@@ -36,7 +36,7 @@ export const Route = createFileRoute("/.lovable/oauth/consent")({
   component: Consent,
   errorComponent: ({ error }) => (
     <main className="flex min-h-screen items-center justify-center p-6 text-center">
-      <p>This connection request could not be loaded: {String(error?.message ?? error)}</p>
+      <p>This connection request could not be loaded: {error instanceof Error ? error.message : String(error)}</p>
     </main>
   ),
 });
