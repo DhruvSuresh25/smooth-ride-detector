@@ -26,6 +26,7 @@ import { Progress } from "@/components/ui/progress";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Textarea } from "@/components/ui/textarea";
 import { supabase } from "@/integrations/supabase/client";
+import { useAreas } from "@/lib/staff";
 import { useAuth, useProfile } from "@/hooks/useAuth";
 import { ANALYSIS_DISCLAIMER, formatDateTime } from "@/lib/constants";
 import {
@@ -68,6 +69,8 @@ function AnalyzePage() {
   const [preview, setPreview] = useState<string | null>(null);
   const [dragging, setDragging] = useState(false);
   const [address, setAddress] = useState("");
+  const [areaId, setAreaId] = useState("");
+  const { data: areas } = useAreas();
   const [coords, setCoords] = useState<{ lat: number; lng: number } | null>(null);
   const [geoState, setGeoState] = useState<"idle" | "locating" | "denied" | "ready">("idle");
   const [description, setDescription] = useState("");
@@ -283,6 +286,22 @@ function AnalyzePage() {
 
             <div className="mt-4 space-y-4">
               <div className="space-y-2">
+                {!!areas?.length && (
+                  <div className="mb-3 space-y-2">
+                    <Label htmlFor="area">Area (routes your complaint to the area admin)</Label>
+                    <select
+                      id="area"
+                      value={areaId}
+                      onChange={(e) => setAreaId(e.target.value)}
+                      className="h-10 w-full rounded-md border border-input bg-background px-3 text-sm"
+                    >
+                      <option value="">Not sure / use my location</option>
+                      {areas.map((a) => (
+                        <option key={a.id} value={a.id}>{a.name}</option>
+                      ))}
+                    </select>
+                  </div>
+                )}
                 <Label htmlFor="address">Street address or landmark</Label>
                 <Input
                   id="address"
