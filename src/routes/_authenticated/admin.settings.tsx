@@ -1,10 +1,72 @@
+import { useQueryClient } from "@tanstack/react-query";
 import { createFileRoute } from "@tanstack/react-router";
-import { Database, Info, ScanEye, ShieldCheck } from "lucide-react";
+import { CalendarClock, Database, Info, ScanEye, ShieldCheck } from "lucide-react";
+import { useEffect, useState } from "react";
+import { toast } from "sonner";
 
 import { AdminShell } from "@/components/layout/Shells";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { supabase } from "@/integrations/supabase/client";
 import { ANALYSIS_DISCLAIMER, APP_NAME, APP_TAGLINE, SEVERITIES, STATUSES } from "@/lib/constants";
+import { useDeadlineDays } from "@/lib/staff";
 import { isDetectionApiConfigured } from "@/services/potholeAnalysis";
+
+function DeadlineSetting() {
+  const qc = useQueryClient();
+  const { data: days } = useDeadlineDays();
+  const [value, setValue] = useState("7");
+  const [saving, setSaving] = useState(false);
+  useEffect(() => {
+    if (days != null) setValue(String(days));
+  }, [days]);
+
+  async function save() {
+    const n = Number(value);
+    if (!Number.isInteger(n) || n < 1 || n > 365) {
+      toast.error("Enter a whole number of days between 1 and 365");
+      return;
+    }
+    setSaving(true);
+    const { error } = await supabase
+      .from("app_settings")
+      .upsert({ id: 1, default_deadline_days: n });
+    setSaving(false);
+    if (error) {
+      toast.error("Could not save", { description: error.message });
+      return;
+    }
+    toast.success(`New complaints now get ${n} days to be fixed`);
+    void qc.invalidateQueries({ queryKey: ["app-settings"] });
+  }
+
+  return (
+    <section className="surface-card p-5">
+      <h2 className="flex items-center gap-2 font-bold">
+        <CalendarClock className="size-4 text-primary" aria-hidden="true" /> Fix deadline
+      </h2>
+      <p className="mt-2 text-sm text-muted-foreground">
+        Days an area admin has to fix a new complaint before it becomes Overdue.
+      </p>
+      <div className="mt-4 flex items-center gap-2">
+        <Input
+          type="number"
+          min={1}
+          max={365}
+          value={value}
+          onChange={(e) => setValue(e.target.value)}
+          className="w-28"
+          aria-label="Default deadline in days"
+        />
+        <span className="text-sm text-muted-foreground">days</span>
+        <Button size="sm" onClick={save} disabled={saving}>
+          Save
+        </Button>
+      </div>
+    </section>
+  );
+}
 
 export const Route = createFileRoute("/_authenticated/admin/settings")({
   staticData: { sitemap: false },
@@ -72,6 +134,8 @@ function AdminSettingsPage() {
             account, as documented in the README.
           </p>
         </section>
+
+        <DeadlineSetting />
 
         <section className="surface-card p-5">
           <h2 className="flex items-center gap-2 font-bold">

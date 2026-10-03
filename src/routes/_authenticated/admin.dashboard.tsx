@@ -15,6 +15,8 @@ import { ReportsTable } from "@/components/reports/ReportsTable";
 import { StatCard } from "@/components/reports/StatCard";
 import { Button } from "@/components/ui/button";
 import { averageResolutionDays, countByStatus, useAllReports, useAllUsers } from "@/lib/reports";
+import { useAuth } from "@/hooks/useAuth";
+import { formatRate, formatRating, useMyWarnings, usePerformance, useStaffRole } from "@/lib/staff";
 
 export const Route = createFileRoute("/_authenticated/admin/dashboard")({
   staticData: { sitemap: false },
@@ -30,6 +32,46 @@ export const Route = createFileRoute("/_authenticated/admin/dashboard")({
   component: AdminDashboardPage,
 });
 
+function MyPerformance() {
+  const { user } = useAuth();
+  const { data: role } = useStaffRole();
+  const { data: perf } = usePerformance(role?.isAreaAdmin ? user?.id : null);
+  const { data: warnings } = useMyWarnings();
+  if (!role?.isAreaAdmin || role.isSuper) return null;
+  return (
+    <section className="surface-card mb-5 p-5" aria-label="My performance">
+      <h2 className="font-bold">My performance</h2>
+      <div className="mt-3 grid gap-3 text-sm sm:grid-cols-3">
+        <div>
+          <p className="text-muted-foreground">On-time rate</p>
+          <p className="text-lg font-bold">{formatRate(perf)}</p>
+        </div>
+        <div>
+          <p className="text-muted-foreground">Average rating</p>
+          <p className="text-lg font-bold">{formatRating(perf)}</p>
+        </div>
+        <div>
+          <p className="text-muted-foreground">Overdue</p>
+          <p className="text-lg font-bold">{perf?.overdue ?? 0}</p>
+        </div>
+      </div>
+      {!!warnings?.length && (
+        <div className="mt-4 space-y-2">
+          <h3 className="text-sm font-semibold text-sev-critical">Warnings from super admin</h3>
+          {warnings.map((w) => (
+            <p key={w.id} className="rounded-lg bg-sev-critical-bg p-3 text-sm">
+              {w.message}
+              <span className="ml-2 text-xs text-muted-foreground">
+                {new Date(w.created_at).toLocaleDateString()}
+              </span>
+            </p>
+          ))}
+        </div>
+      )}
+    </section>
+  );
+}
+
 function AdminDashboardPage() {
   const { data: reports, isLoading } = useAllReports();
   const { data: users } = useAllUsers();
@@ -38,6 +80,7 @@ function AdminDashboardPage() {
 
   return (
     <AdminShell title="Overview" subtitle="All reports across DriveSafe Vision">
+      <MyPerformance />
       {isLoading ? (
         <div className="surface-card grid place-items-center gap-2 p-12 text-sm text-muted-foreground">
           <Loader2 className="size-5 animate-spin text-primary" aria-hidden="true" />
@@ -48,14 +91,14 @@ function AdminDashboardPage() {
           <section aria-label="Key metrics" className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
             <StatCard label="Total reports" value={all.length} icon={FileStack} tone="primary" />
             <StatCard
-              label="Pending review"
-              value={countByStatus(all, "Pending")}
+              label="Awaiting review"
+              value={countByStatus(all, "Submitted")}
               icon={Clock}
               tone="medium"
             />
             <StatCard
-              label="Resolved"
-              value={countByStatus(all, "Resolved")}
+              label="Fixed"
+              value={countByStatus(all, "Fixed")}
               icon={CheckCircle2}
               tone="low"
             />
