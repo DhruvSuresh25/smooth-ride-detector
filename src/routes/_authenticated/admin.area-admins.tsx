@@ -137,7 +137,7 @@ function AreasCard({ areas }: { areas: Area[] }) {
     setBusy(true);
     const { error } = await supabase.from("areas").insert({ name: n.slice(0, 100) });
     setBusy(false);
-    if (error) return toast.error("Could not add area", { description: error.message });
+    if (error) return void toast.error("Could not add area", { description: error.message });
     setName("");
     void qc.invalidateQueries({ queryKey: ["areas"] });
   }
@@ -146,7 +146,7 @@ function AreasCard({ areas }: { areas: Area[] }) {
     if (!confirm(`Delete area "${a.name}"? Complaints in it stay but become unassigned to an area.`))
       return;
     const { error } = await supabase.from("areas").delete().eq("id", a.id);
-    if (error) return toast.error("Could not delete area", { description: error.message });
+    if (error) return void toast.error("Could not delete area", { description: error.message });
     void qc.invalidateQueries({ queryKey: ["areas"] });
     void qc.invalidateQueries({ queryKey: ["area-admins"] });
   }
@@ -209,7 +209,7 @@ function AdminCard({
     const res = await setStatus({
       data: { userId: admin.user_id, status: suspended ? "Active" : "Suspended" },
     });
-    if (!res.ok) return toast.error("Could not update", { description: res.error });
+    if (!res.ok) return void toast.error("Could not update", { description: res.error });
     toast.success(suspended ? "Admin reactivated" : "Admin suspended");
     refresh();
   }
@@ -218,7 +218,7 @@ function AdminCard({
     if (!confirm(`Delete ${admin.full_name || admin.email}? Their complaints stay and become unassigned.`))
       return;
     const res = await del({ data: { userId: admin.user_id } });
-    if (!res.ok) return toast.error("Could not delete", { description: res.error });
+    if (!res.ok) return void toast.error("Could not delete", { description: res.error });
     toast.success("Area admin deleted");
     refresh();
   }
@@ -293,15 +293,15 @@ function AdminFormDialog({
   const [busy, setBusy] = useState(false);
 
   async function save() {
-    if (!fullName.trim()) return toast.error("Name is required");
+    if (!fullName.trim()) return void toast.error("Name is required");
     if (!admin && (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email) || password.length < 8))
-      return toast.error("Enter a valid email and a password of at least 8 characters");
+      return void toast.error("Enter a valid email and a password of at least 8 characters");
     setBusy(true);
     try {
       const res = admin
         ? await update({ data: { userId: admin.user_id, fullName, areaIds } })
         : await create({ data: { email, fullName, password, areaIds } });
-      if (!res.ok) return toast.error("Could not save", { description: res.error });
+      if (!res.ok) return void toast.error("Could not save", { description: res.error });
       toast.success(admin ? "Area admin updated" : "Area admin created", {
         description: admin ? undefined : "Share the sign-in details with them privately.",
       });
@@ -372,7 +372,7 @@ function WarnDialog({ admin, onClose }: { admin: AreaAdminRow; onClose: () => vo
     const { error } = await supabase
       .from("admin_warnings")
       .insert({ admin_id: admin.user_id, message: m.slice(0, 1000), created_by: user?.id ?? null });
-    if (error) return toast.error("Could not send warning", { description: error.message });
+    if (error) return void toast.error("Could not send warning", { description: error.message });
     toast.success("Warning sent", { description: "They will see it on their overview page." });
     onClose();
   }
@@ -413,7 +413,7 @@ function ReassignDialog({
       .eq("assigned_admin_id", admin.user_id)
       .not("status", "in", "(Fixed,Rejected)")
       .select("id");
-    if (error) return toast.error("Could not reassign", { description: error.message });
+    if (error) return void toast.error("Could not reassign", { description: error.message });
     toast.success(`${data?.length ?? 0} open complaint(s) reassigned`);
     onDone();
     onClose();
