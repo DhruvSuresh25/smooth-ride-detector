@@ -97,3 +97,34 @@ export function formatRate(p: Performance | null | undefined) {
 export function formatRating(p: Performance | null | undefined) {
   return p?.avg_rating != null ? `${p.avg_rating} / 5 (${p.rating_count})` : "No ratings yet";
 }
+
+export function useThresholds() {
+  return useQuery({
+    queryKey: ["app-settings", "thresholds"],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("app_settings")
+        .select("good_threshold, poor_threshold")
+        .eq("id", 1)
+        .maybeSingle();
+      if (error) throw error;
+      return { good: data?.good_threshold ?? 85, poor: data?.poor_threshold ?? 60 };
+    },
+  });
+}
+
+export type Band = "Good" | "Average" | "Poor" | null;
+export function performanceBand(
+  p: Performance | null | undefined,
+  t: { good: number; poor: number } | undefined,
+): Band {
+  if (p?.on_time_rate == null || !t) return null;
+  if (p.on_time_rate >= t.good) return "Good";
+  if (p.on_time_rate < t.poor) return "Poor";
+  return "Average";
+}
+export const bandClasses: Record<"Good" | "Average" | "Poor", string> = {
+  Good: "bg-sev-low-bg text-sev-low border-sev-low/25",
+  Average: "bg-sev-medium-bg text-sev-medium border-sev-medium/25",
+  Poor: "bg-sev-critical-bg text-sev-critical border-sev-critical/25",
+};
