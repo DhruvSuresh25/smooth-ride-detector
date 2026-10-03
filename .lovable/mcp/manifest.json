@@ -35,7 +35,8 @@
                 "Received",
                 "In Progress",
                 "Fixed",
-                "Rejected"
+                "Rejected",
+                "Duplicate"
               ],
               "description": "Only return reports with this status."
             },
