@@ -4,6 +4,7 @@ import { CalendarClock, Database, Info, ScanEye, ShieldCheck } from "lucide-reac
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
 
+import { DeadlineRules, ThresholdSetting } from "@/components/admin/SettingsExtras";
 import { AdminShell } from "@/components/layout/Shells";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -136,6 +137,8 @@ function AdminSettingsPage() {
         </section>
 
         <DeadlineSetting />
+        <ThresholdSetting />
+        <DeadlineRules />
 
         <section className="surface-card p-5">
           <h2 className="flex items-center gap-2 font-bold">
