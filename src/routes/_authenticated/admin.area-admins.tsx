@@ -411,7 +411,7 @@ function ReassignDialog({
       .from("reports")
       .update({ assigned_admin_id: target })
       .eq("assigned_admin_id", admin.user_id)
-      .not("status", "in", "(Fixed,Rejected)")
+      .not("status", "in", "(Fixed,Rejected,Duplicate)")
       .select("id");
     if (error) return void toast.error("Could not reassign", { description: error.message });
     toast.success(`${data?.length ?? 0} open complaint(s) reassigned`);
