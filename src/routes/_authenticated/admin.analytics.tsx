@@ -9,7 +9,8 @@ import {
 } from "@/components/admin/AdminCharts";
 import { AdminShell } from "@/components/layout/Shells";
 import { StatCard } from "@/components/reports/StatCard";
-import { averageResolutionDays, countByStatus, useAllReports } from "@/lib/reports";
+import { AccountabilityPanel } from "@/components/admin/AccountabilityPanel";
+import { averageResolutionDays, countByStatus, useAllReports, useAllUsers } from "@/lib/reports";
 
 export const Route = createFileRoute("/_authenticated/admin/analytics")({
   staticData: { sitemap: false },
@@ -30,6 +31,7 @@ export const Route = createFileRoute("/_authenticated/admin/analytics")({
 
 function AdminAnalyticsPage() {
   const { data: reports, isLoading } = useAllReports();
+  const { data: users } = useAllUsers();
   const all = reports ?? [];
   const avgDays = averageResolutionDays(all);
   const resolutionRate = all.length
@@ -67,6 +69,8 @@ function AdminAnalyticsPage() {
         <StatusChart reports={all} />
         <LocationChart reports={all} />
       </div>
+
+      <AccountabilityPanel reports={all} people={users ?? []} />
     </AdminShell>
   );
 }
