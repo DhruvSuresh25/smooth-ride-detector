@@ -21,7 +21,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Textarea } from "@/components/ui/textarea";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
-import { ADMIN_STATUSES, STATUSES, formatDateTime, isOverdue, type ReportStatus } from "@/lib/constants";
+import { ADMIN_STATUSES, STATUSES, formatDateTime, isOverdue, timeLeft, type ReportStatus } from "@/lib/constants";
 import { useAreas, useStaffRole } from "@/lib/staff";
 import { useQuery } from "@tanstack/react-query";
 import { useReport, useReportHistory } from "@/lib/reports";
@@ -70,6 +70,7 @@ function AdminReportDetailPage() {
     },
   });
   const [notes, setNotes] = useState("");
+  const [repairFile, setRepairFile] = useState<File | null>(null);
   const [saving, setSaving] = useState(false);
   const notify = useServerFn(notifyReportUpdate);
 
@@ -85,11 +86,30 @@ function AdminReportDetailPage() {
   async function saveUpdate() {
     if (!report) return;
     setSaving(true);
+    let repairRef: string | undefined;
+    if (repairFile) {
+      if (repairFile.size > 8 * 1024 * 1024) {
+        setSaving(false);
+        toast.error("Repair photo must be 8 MB or smaller");
+        return;
+      }
+      const path = `repair/${report.id}-${Date.now()}.${repairFile.type === "image/png" ? "png" : "jpg"}`;
+      const { error: upErr } = await supabase.storage
+        .from("report-annotated-images")
+        .upload(path, repairFile, { contentType: repairFile.type });
+      if (upErr) {
+        setSaving(false);
+        toast.error("Could not upload repair photo", { description: upErr.message });
+        return;
+      }
+      repairRef = `report-annotated-images/${path}`;
+    }
     const { error } = await supabase
       .from("reports")
       .update({
         status,
         admin_notes: notes.trim() || null,
+        ...(repairRef ? { repair_image_url: repairRef } : {}),
         ...(isSuper
           ? {
               area_id: areaId === "none" ? null : areaId,
@@ -233,12 +253,26 @@ function AdminReportDetailPage() {
               <Detail label="Submitted by" value={report.submitter_name || "—"} />
               <Detail label="Email" value={report.submitter_email} />
               <Detail label="Submitted" value={formatDateTime(report.created_at)} />
-              <Detail label="Fix deadline" value={formatDateTime(report.deadline_at)} />
+              <Detail
+                label="Fix deadline"
+                value={`${formatDateTime(report.deadline_at)}${timeLeft(report) ? ` (${timeLeft(report)})` : ""}`}
+              />
               <Detail label="Area" value={areas?.find((a) => a.id === report.area_id)?.name ?? "Not set"} />
               <Detail
                 label="Citizen rating"
                 value={report.citizen_rating != null ? `${report.citizen_rating} / 5` : "Not rated"}
               />
+              {report.confirmed_fixed != null && (
+                <Detail
+                  label="Citizen confirmation"
+                  value={report.confirmed_fixed ? "Confirmed fixed" : "Says it is still there"}
+                />
+              )}
+              {report.citizen_comment && (
+                <div className="sm:col-span-3">
+                  <Detail label="Citizen feedback" value={report.citizen_comment} />
+                </div>
+              )}
               <div className="sm:col-span-2">
                 <Detail label="Address" value={report.address || "Not provided"} />
               </div>
@@ -328,6 +362,23 @@ function AdminReportDetailPage() {
                 <p className="text-xs text-muted-foreground">
                   Notes are visible to the citizen who filed this report.
                 </p>
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="repair-photo">After-repair photo (optional)</Label>
+                <input
+                  id="repair-photo"
+                  type="file"
+                  accept="image/jpeg,image/png"
+                  className="block w-full text-sm"
+                  onChange={(e) => setRepairFile(e.target.files?.[0] ?? null)}
+                />
+                {report.repair_image_url && (
+                  <StorageImage
+                    path={report.repair_image_url}
+                    alt={`After-repair photo for ${report.report_number}`}
+                    className="max-h-48 w-full border border-border"
+                  />
+                )}
               </div>
               <Button onClick={saveUpdate} disabled={saving} className="w-full gap-2">
                 {saving ? (
