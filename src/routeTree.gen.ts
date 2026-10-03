@@ -11,6 +11,7 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/route'
+import { Route as AreaStatsRouteImport } from './routes/area-stats'
 import { Route as ForgotPasswordRouteImport } from './routes/forgot-password'
 import { Route as LoginRouteImport } from './routes/login'
 import { Route as McpRouteImport } from './routes/mcp'
@@ -20,12 +21,15 @@ import { Route as SitemapDotxmlRouteImport } from './routes/sitemap[.]xml'
 import { Route as Char91DotwellKnownChar93OauthProtectedResourceRouteImport } from './routes/[.well-known]/oauth-protected-resource'
 import { Route as AuthenticatedAnalyzeRouteImport } from './routes/_authenticated/analyze'
 import { Route as AuthenticatedDashboardRouteImport } from './routes/_authenticated/dashboard'
+import { Route as AuthenticatedMapRouteImport } from './routes/_authenticated/map'
 import { Route as AuthenticatedProfileRouteImport } from './routes/_authenticated/profile'
 import { Route as AdminLoginRouteImport } from './routes/admin.login'
 import { Route as DotlovableOauthConsentRouteImport } from './routes/[.]lovable.oauth.consent'
 import { Route as AuthenticatedAdminAnalyticsRouteImport } from './routes/_authenticated/admin.analytics'
 import { Route as AuthenticatedAdminAreaAdminsRouteImport } from './routes/_authenticated/admin.area-admins'
+import { Route as AuthenticatedAdminAuditLogRouteImport } from './routes/_authenticated/admin.audit-log'
 import { Route as AuthenticatedAdminDashboardRouteImport } from './routes/_authenticated/admin.dashboard'
+import { Route as AuthenticatedAdminMapRouteImport } from './routes/_authenticated/admin.map'
 import { Route as AuthenticatedAdminSettingsRouteImport } from './routes/_authenticated/admin.settings'
 import { Route as AuthenticatedAdminUsersRouteImport } from './routes/_authenticated/admin.users'
 import { Route as AuthenticatedReportsIndexRouteImport } from './routes/_authenticated/reports.index'
@@ -43,6 +47,11 @@ const IndexRoute = IndexRouteImport.update({
 } as any)
 const AuthenticatedRouteRoute = AuthenticatedRouteRouteImport.update({
   id: '/_authenticated',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AreaStatsRoute = AreaStatsRouteImport.update({
+  id: '/area-stats',
+  path: '/area-stats',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ForgotPasswordRoute = ForgotPasswordRouteImport.update({
@@ -91,6 +100,11 @@ const AuthenticatedDashboardRoute = AuthenticatedDashboardRouteImport.update({
   path: '/dashboard',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const AuthenticatedMapRoute = AuthenticatedMapRouteImport.update({
+  id: '/map',
+  path: '/map',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
 const AuthenticatedProfileRoute = AuthenticatedProfileRouteImport.update({
   id: '/profile',
   path: '/profile',
@@ -118,12 +132,23 @@ const AuthenticatedAdminAreaAdminsRoute =
     path: '/admin/area-admins',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
+const AuthenticatedAdminAuditLogRoute =
+  AuthenticatedAdminAuditLogRouteImport.update({
+    id: '/admin/audit-log',
+    path: '/admin/audit-log',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 const AuthenticatedAdminDashboardRoute =
   AuthenticatedAdminDashboardRouteImport.update({
     id: '/admin/dashboard',
     path: '/admin/dashboard',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
+const AuthenticatedAdminMapRoute = AuthenticatedAdminMapRouteImport.update({
+  id: '/admin/map',
+  path: '/admin/map',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
 const AuthenticatedAdminSettingsRoute =
   AuthenticatedAdminSettingsRouteImport.update({
     id: '/admin/settings',
@@ -177,6 +202,7 @@ const LovableEmailTransactionalPreviewRoute =
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/area-stats': typeof AreaStatsRoute
   '/forgot-password': typeof ForgotPasswordRoute
   '/login': typeof LoginRoute
   '/mcp': typeof McpRoute
@@ -186,12 +212,15 @@ export interface FileRoutesByFullPath {
   '/.well-known/oauth-protected-resource': typeof Char91DotwellKnownChar93OauthProtectedResourceRoute
   '/analyze': typeof AuthenticatedAnalyzeRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
+  '/map': typeof AuthenticatedMapRoute
   '/profile': typeof AuthenticatedProfileRoute
   '/admin/login': typeof AdminLoginRoute
   '/.lovable/oauth/consent': typeof DotlovableOauthConsentRoute
   '/admin/analytics': typeof AuthenticatedAdminAnalyticsRoute
   '/admin/area-admins': typeof AuthenticatedAdminAreaAdminsRoute
+  '/admin/audit-log': typeof AuthenticatedAdminAuditLogRoute
   '/admin/dashboard': typeof AuthenticatedAdminDashboardRoute
+  '/admin/map': typeof AuthenticatedAdminMapRoute
   '/admin/settings': typeof AuthenticatedAdminSettingsRoute
   '/admin/users': typeof AuthenticatedAdminUsersRoute
   '/reports/$id': typeof AuthenticatedReportsIdRoute
@@ -204,6 +233,7 @@ export interface FileRoutesByFullPath {
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/area-stats': typeof AreaStatsRoute
   '/forgot-password': typeof ForgotPasswordRoute
   '/login': typeof LoginRoute
   '/mcp': typeof McpRoute
@@ -213,12 +243,15 @@ export interface FileRoutesByTo {
   '/.well-known/oauth-protected-resource': typeof Char91DotwellKnownChar93OauthProtectedResourceRoute
   '/analyze': typeof AuthenticatedAnalyzeRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
+  '/map': typeof AuthenticatedMapRoute
   '/profile': typeof AuthenticatedProfileRoute
   '/admin/login': typeof AdminLoginRoute
   '/.lovable/oauth/consent': typeof DotlovableOauthConsentRoute
   '/admin/analytics': typeof AuthenticatedAdminAnalyticsRoute
   '/admin/area-admins': typeof AuthenticatedAdminAreaAdminsRoute
+  '/admin/audit-log': typeof AuthenticatedAdminAuditLogRoute
   '/admin/dashboard': typeof AuthenticatedAdminDashboardRoute
+  '/admin/map': typeof AuthenticatedAdminMapRoute
   '/admin/settings': typeof AuthenticatedAdminSettingsRoute
   '/admin/users': typeof AuthenticatedAdminUsersRoute
   '/reports/$id': typeof AuthenticatedReportsIdRoute
@@ -233,6 +266,7 @@ export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/_authenticated': typeof AuthenticatedRouteRouteWithChildren
+  '/area-stats': typeof AreaStatsRoute
   '/forgot-password': typeof ForgotPasswordRoute
   '/login': typeof LoginRoute
   '/mcp': typeof McpRoute
@@ -242,12 +276,15 @@ export interface FileRoutesById {
   '/.well-known/oauth-protected-resource': typeof Char91DotwellKnownChar93OauthProtectedResourceRoute
   '/_authenticated/analyze': typeof AuthenticatedAnalyzeRoute
   '/_authenticated/dashboard': typeof AuthenticatedDashboardRoute
+  '/_authenticated/map': typeof AuthenticatedMapRoute
   '/_authenticated/profile': typeof AuthenticatedProfileRoute
   '/admin/login': typeof AdminLoginRoute
   '/.lovable/oauth/consent': typeof DotlovableOauthConsentRoute
   '/_authenticated/admin/analytics': typeof AuthenticatedAdminAnalyticsRoute
   '/_authenticated/admin/area-admins': typeof AuthenticatedAdminAreaAdminsRoute
+  '/_authenticated/admin/audit-log': typeof AuthenticatedAdminAuditLogRoute
   '/_authenticated/admin/dashboard': typeof AuthenticatedAdminDashboardRoute
+  '/_authenticated/admin/map': typeof AuthenticatedAdminMapRoute
   '/_authenticated/admin/settings': typeof AuthenticatedAdminSettingsRoute
   '/_authenticated/admin/users': typeof AuthenticatedAdminUsersRoute
   '/_authenticated/reports/$id': typeof AuthenticatedReportsIdRoute
@@ -262,6 +299,7 @@ export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
+    | '/area-stats'
     | '/forgot-password'
     | '/login'
     | '/mcp'
@@ -271,12 +309,15 @@ export interface FileRouteTypes {
     | '/.well-known/oauth-protected-resource'
     | '/analyze'
     | '/dashboard'
+    | '/map'
     | '/profile'
     | '/admin/login'
     | '/.lovable/oauth/consent'
     | '/admin/analytics'
     | '/admin/area-admins'
+    | '/admin/audit-log'
     | '/admin/dashboard'
+    | '/admin/map'
     | '/admin/settings'
     | '/admin/users'
     | '/reports/$id'
@@ -289,6 +330,7 @@ export interface FileRouteTypes {
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
+    | '/area-stats'
     | '/forgot-password'
     | '/login'
     | '/mcp'
@@ -298,12 +340,15 @@ export interface FileRouteTypes {
     | '/.well-known/oauth-protected-resource'
     | '/analyze'
     | '/dashboard'
+    | '/map'
     | '/profile'
     | '/admin/login'
     | '/.lovable/oauth/consent'
     | '/admin/analytics'
     | '/admin/area-admins'
+    | '/admin/audit-log'
     | '/admin/dashboard'
+    | '/admin/map'
     | '/admin/settings'
     | '/admin/users'
     | '/reports/$id'
@@ -317,6 +362,7 @@ export interface FileRouteTypes {
     | '__root__'
     | '/'
     | '/_authenticated'
+    | '/area-stats'
     | '/forgot-password'
     | '/login'
     | '/mcp'
@@ -326,12 +372,15 @@ export interface FileRouteTypes {
     | '/.well-known/oauth-protected-resource'
     | '/_authenticated/analyze'
     | '/_authenticated/dashboard'
+    | '/_authenticated/map'
     | '/_authenticated/profile'
     | '/admin/login'
     | '/.lovable/oauth/consent'
     | '/_authenticated/admin/analytics'
     | '/_authenticated/admin/area-admins'
+    | '/_authenticated/admin/audit-log'
     | '/_authenticated/admin/dashboard'
+    | '/_authenticated/admin/map'
     | '/_authenticated/admin/settings'
     | '/_authenticated/admin/users'
     | '/_authenticated/reports/$id'
@@ -346,6 +395,7 @@ export interface FileRouteTypes {
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AuthenticatedRouteRoute: typeof AuthenticatedRouteRouteWithChildren
+  AreaStatsRoute: typeof AreaStatsRoute
   ForgotPasswordRoute: typeof ForgotPasswordRoute
   LoginRoute: typeof LoginRoute
   McpRoute: typeof McpRoute
@@ -374,6 +424,13 @@ declare module '@tanstack/react-router' {
       path: ''
       fullPath: '/'
       preLoaderRoute: typeof AuthenticatedRouteRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/area-stats': {
+      id: '/area-stats'
+      path: '/area-stats'
+      fullPath: '/area-stats'
+      preLoaderRoute: typeof AreaStatsRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/forgot-password': {
@@ -439,6 +496,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedDashboardRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/map': {
+      id: '/_authenticated/map'
+      path: '/map'
+      fullPath: '/map'
+      preLoaderRoute: typeof AuthenticatedMapRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/profile': {
       id: '/_authenticated/profile'
       path: '/profile'
@@ -474,11 +538,25 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedAdminAreaAdminsRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/admin/audit-log': {
+      id: '/_authenticated/admin/audit-log'
+      path: '/admin/audit-log'
+      fullPath: '/admin/audit-log'
+      preLoaderRoute: typeof AuthenticatedAdminAuditLogRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/admin/dashboard': {
       id: '/_authenticated/admin/dashboard'
       path: '/admin/dashboard'
       fullPath: '/admin/dashboard'
       preLoaderRoute: typeof AuthenticatedAdminDashboardRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/admin/map': {
+      id: '/_authenticated/admin/map'
+      path: '/admin/map'
+      fullPath: '/admin/map'
+      preLoaderRoute: typeof AuthenticatedAdminMapRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/admin/settings': {
@@ -550,10 +628,13 @@ declare module '@tanstack/react-router' {
 interface AuthenticatedRouteRouteChildren {
   AuthenticatedAnalyzeRoute: typeof AuthenticatedAnalyzeRoute
   AuthenticatedDashboardRoute: typeof AuthenticatedDashboardRoute
+  AuthenticatedMapRoute: typeof AuthenticatedMapRoute
   AuthenticatedProfileRoute: typeof AuthenticatedProfileRoute
   AuthenticatedAdminAnalyticsRoute: typeof AuthenticatedAdminAnalyticsRoute
   AuthenticatedAdminAreaAdminsRoute: typeof AuthenticatedAdminAreaAdminsRoute
+  AuthenticatedAdminAuditLogRoute: typeof AuthenticatedAdminAuditLogRoute
   AuthenticatedAdminDashboardRoute: typeof AuthenticatedAdminDashboardRoute
+  AuthenticatedAdminMapRoute: typeof AuthenticatedAdminMapRoute
   AuthenticatedAdminSettingsRoute: typeof AuthenticatedAdminSettingsRoute
   AuthenticatedAdminUsersRoute: typeof AuthenticatedAdminUsersRoute
   AuthenticatedReportsIdRoute: typeof AuthenticatedReportsIdRoute
@@ -565,10 +646,13 @@ interface AuthenticatedRouteRouteChildren {
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedAnalyzeRoute: AuthenticatedAnalyzeRoute,
   AuthenticatedDashboardRoute: AuthenticatedDashboardRoute,
+  AuthenticatedMapRoute: AuthenticatedMapRoute,
   AuthenticatedProfileRoute: AuthenticatedProfileRoute,
   AuthenticatedAdminAnalyticsRoute: AuthenticatedAdminAnalyticsRoute,
   AuthenticatedAdminAreaAdminsRoute: AuthenticatedAdminAreaAdminsRoute,
+  AuthenticatedAdminAuditLogRoute: AuthenticatedAdminAuditLogRoute,
   AuthenticatedAdminDashboardRoute: AuthenticatedAdminDashboardRoute,
+  AuthenticatedAdminMapRoute: AuthenticatedAdminMapRoute,
   AuthenticatedAdminSettingsRoute: AuthenticatedAdminSettingsRoute,
   AuthenticatedAdminUsersRoute: AuthenticatedAdminUsersRoute,
   AuthenticatedReportsIdRoute: AuthenticatedReportsIdRoute,
@@ -583,6 +667,7 @@ const AuthenticatedRouteRouteWithChildren =
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AuthenticatedRouteRoute: AuthenticatedRouteRouteWithChildren,
+  AreaStatsRoute: AreaStatsRoute,
   ForgotPasswordRoute: ForgotPasswordRoute,
   LoginRoute: LoginRoute,
   McpRoute: McpRoute,
