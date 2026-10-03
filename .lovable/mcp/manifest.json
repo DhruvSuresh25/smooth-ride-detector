@@ -31,10 +31,10 @@
             "status": {
               "type": "string",
               "enum": [
-                "Pending",
-                "Under Review",
-                "Action Taken",
-                "Resolved",
+                "Submitted",
+                "Received",
+                "In Progress",
+                "Fixed",
                 "Rejected"
               ],
               "description": "Only return reports with this status."
