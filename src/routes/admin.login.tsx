@@ -53,12 +53,11 @@ function AdminLoginPage() {
       return;
     }
 
-    const { data: roleRow } = await supabase
-      .from("user_roles")
-      .select("role")
-      .eq("user_id", data.user.id)
-      .eq("role", "admin")
-      .maybeSingle();
+    const [{ data: isSuper }, { data: isArea }] = await Promise.all([
+      supabase.rpc("has_role", { _user_id: data.user.id, _role: "admin" }),
+      supabase.rpc("is_area_admin", { _user_id: data.user.id }),
+    ]);
+    const roleRow = isSuper || isArea;
 
     setSubmitting(false);
 
@@ -70,7 +69,8 @@ function AdminLoginPage() {
       return;
     }
 
-    queryClient.setQueryData(["is-admin", data.user.id], true);
+    queryClient.setQueryData(["is-admin", data.user.id], !!isSuper);
+    queryClient.setQueryData(["staff-role", data.user.id], { isSuper: !!isSuper, isAreaAdmin: !!isArea });
     toast.success("Administrator signed in");
     navigate({ to: "/admin/dashboard", replace: true });
   }

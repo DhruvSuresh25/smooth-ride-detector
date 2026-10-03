@@ -30,6 +30,7 @@ export function SeverityBadge({ severity }: { severity: string }) {
 }
 
 export function StatusBadge({ status }: { status: string }) {
-  const key = (status as ReportStatus) in statusClasses ? (status as ReportStatus) : "Pending";
+  const key = (status as ReportStatus) in statusClasses ? (status as ReportStatus) : "Submitted";
+  if (status === "Overdue") return <Pill className={severityClasses.Critical}>Overdue</Pill>;
   return <Pill className={statusClasses[key]}>{status}</Pill>;
 }

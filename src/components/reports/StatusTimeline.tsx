@@ -15,15 +15,14 @@ export function StatusTimeline({
   const currentIndex = TIMELINE_STEPS.indexOf(report.status as (typeof TIMELINE_STEPS)[number]);
 
   const steps = [
-    { label: "Report Submitted", status: "Pending" as const },
-    ...TIMELINE_STEPS.map((s) => ({ label: s === "Pending" ? "Pending Review" : s, status: s })),
+    ...TIMELINE_STEPS.map((s) => ({ label: s === "Submitted" ? "Report Submitted" : s, status: s })),
   ];
 
   return (
     <ol className="space-y-0">
       {steps.map((step, index) => {
         const event = events.find((e) => e.status === step.status);
-        const stepIndex = index === 0 ? 0 : TIMELINE_STEPS.indexOf(step.status);
+        const stepIndex = TIMELINE_STEPS.indexOf(step.status);
         const reached = index === 0 || (!rejected && currentIndex >= stepIndex && currentIndex >= 0);
         const isCurrent = !rejected && index > 0 && stepIndex === currentIndex;
 

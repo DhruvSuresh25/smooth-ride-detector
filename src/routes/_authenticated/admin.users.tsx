@@ -106,7 +106,7 @@ function AdminUsersPage() {
   }
 
   return (
-    <AdminShell title="Users" subtitle={`${users?.length ?? 0} registered account(s)`}>
+    <AdminShell superOnly title="Users" subtitle={`${users?.length ?? 0} registered account(s)`}>
       <section className="surface-card mb-5 grid gap-3 p-4 sm:grid-cols-2">
         <div className="space-y-1.5">
           <Label htmlFor="user-search">Search</Label>

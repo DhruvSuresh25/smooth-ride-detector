@@ -69,26 +69,26 @@ function DashboardPage() {
           tone="primary"
         />
         <StatCard
-          label="Pending Review"
-          value={countByStatus(reports ?? [], "Pending")}
+          label="Submitted"
+          value={countByStatus(reports ?? [], "Submitted")}
           icon={Clock}
           tone="medium"
         />
         <StatCard
-          label="Under Review"
-          value={countByStatus(reports ?? [], "Under Review")}
+          label="Received"
+          value={countByStatus(reports ?? [], "Received")}
           icon={Search}
           tone="primary"
         />
         <StatCard
-          label="Action Taken"
-          value={countByStatus(reports ?? [], "Action Taken")}
+          label="In Progress"
+          value={countByStatus(reports ?? [], "In Progress")}
           icon={Hammer}
           tone="high"
         />
         <StatCard
-          label="Resolved"
-          value={countByStatus(reports ?? [], "Resolved")}
+          label="Fixed"
+          value={countByStatus(reports ?? [], "Fixed")}
           icon={CheckCircle2}
           tone="low"
         />

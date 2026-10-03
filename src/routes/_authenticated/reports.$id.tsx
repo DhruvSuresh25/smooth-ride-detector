@@ -7,7 +7,8 @@ import { UserShell } from "@/components/layout/Shells";
 import { StatusTimeline } from "@/components/reports/StatusTimeline";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { formatDateTime } from "@/lib/constants";
+import { formatDateTime, isOverdue } from "@/lib/constants";
+import { RateAndAdminCard } from "@/components/reports/RateAndAdminCard";
 import { useReport, useReportHistory } from "@/lib/reports";
 
 export const Route = createFileRoute("/_authenticated/reports/$id")({
@@ -73,6 +74,7 @@ function ReportDetailPage() {
           <section className="surface-card p-5">
             <div className="flex flex-wrap items-center gap-2">
               <StatusBadge status={report.status} />
+              {isOverdue(report) && <StatusBadge status="Overdue" />}
               <SeverityBadge severity={report.severity} />
               <span className="text-sm text-muted-foreground">
                 {report.pothole_count} pothole(s) detected
@@ -164,6 +166,8 @@ function ReportDetailPage() {
             </p>
             <StatusTimeline report={report} events={history ?? []} />
           </section>
+
+          <RateAndAdminCard report={report} />
 
           {report.admin_notes && (
             <section className="surface-card p-5">

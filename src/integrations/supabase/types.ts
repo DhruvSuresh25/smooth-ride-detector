@@ -14,6 +14,38 @@ export type Database = {
   }
   public: {
     Tables: {
+      admin_warnings: {
+        Row: {
+          admin_id: string
+          created_at: string
+          created_by: string | null
+          id: string
+          message: string
+        }
+        Insert: {
+          admin_id: string
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          message: string
+        }
+        Update: {
+          admin_id?: string
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          message?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "admin_warnings_admin_id_fkey"
+            columns: ["admin_id"]
+            isOneToOne: false
+            referencedRelation: "area_admins"
+            referencedColumns: ["user_id"]
+          },
+        ]
+      }
       ai_assist_usage: {
         Row: {
           client_hash: string
@@ -29,6 +61,90 @@ export type Database = {
           client_hash?: string
           created_at?: string
           id?: string
+        }
+        Relationships: []
+      }
+      app_settings: {
+        Row: {
+          default_deadline_days: number
+          id: number
+          updated_at: string
+        }
+        Insert: {
+          default_deadline_days?: number
+          id?: number
+          updated_at?: string
+        }
+        Update: {
+          default_deadline_days?: number
+          id?: number
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      area_admin_areas: {
+        Row: {
+          admin_id: string
+          area_id: string
+        }
+        Insert: {
+          admin_id: string
+          area_id: string
+        }
+        Update: {
+          admin_id?: string
+          area_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "area_admin_areas_admin_id_fkey"
+            columns: ["admin_id"]
+            isOneToOne: false
+            referencedRelation: "area_admins"
+            referencedColumns: ["user_id"]
+          },
+          {
+            foreignKeyName: "area_admin_areas_area_id_fkey"
+            columns: ["area_id"]
+            isOneToOne: false
+            referencedRelation: "areas"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      area_admins: {
+        Row: {
+          created_at: string
+          created_by: string | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          created_by?: string | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          created_by?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
+      areas: {
+        Row: {
+          created_at: string
+          id: string
+          name: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          name: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          name?: string
         }
         Relationships: []
       }
@@ -108,8 +224,12 @@ export type Database = {
           address: string
           admin_notes: string | null
           annotated_image_url: string | null
+          area_id: string | null
+          assigned_admin_id: string | null
+          citizen_rating: number | null
           confidence: number | null
           created_at: string
+          deadline_at: string | null
           description: string | null
           estimated_height: number | null
           estimated_width: number | null
@@ -118,6 +238,7 @@ export type Database = {
           longitude: number | null
           original_image_url: string | null
           pothole_count: number
+          rated_at: string | null
           report_number: string
           resolved_at: string | null
           road_position: string | null
@@ -132,8 +253,12 @@ export type Database = {
           address?: string
           admin_notes?: string | null
           annotated_image_url?: string | null
+          area_id?: string | null
+          assigned_admin_id?: string | null
+          citizen_rating?: number | null
           confidence?: number | null
           created_at?: string
+          deadline_at?: string | null
           description?: string | null
           estimated_height?: number | null
           estimated_width?: number | null
@@ -142,6 +267,7 @@ export type Database = {
           longitude?: number | null
           original_image_url?: string | null
           pothole_count?: number
+          rated_at?: string | null
           report_number?: string
           resolved_at?: string | null
           road_position?: string | null
@@ -156,8 +282,12 @@ export type Database = {
           address?: string
           admin_notes?: string | null
           annotated_image_url?: string | null
+          area_id?: string | null
+          assigned_admin_id?: string | null
+          citizen_rating?: number | null
           confidence?: number | null
           created_at?: string
+          deadline_at?: string | null
           description?: string | null
           estimated_height?: number | null
           estimated_width?: number | null
@@ -166,6 +296,7 @@ export type Database = {
           longitude?: number | null
           original_image_url?: string | null
           pothole_count?: number
+          rated_at?: string | null
           report_number?: string
           resolved_at?: string | null
           road_position?: string | null
@@ -176,7 +307,15 @@ export type Database = {
           updated_at?: string
           user_id?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "reports_area_id_fkey"
+            columns: ["area_id"]
+            isOneToOne: false
+            referencedRelation: "areas"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       user_roles: {
         Row: {
@@ -212,12 +351,33 @@ export type Database = {
       }
     }
     Functions: {
+      admin_performance: {
+        Args: { _admin_id: string }
+        Returns: {
+          avg_rating: number
+          fixed: number
+          fixed_on_time: number
+          on_time_rate: number
+          overdue: number
+          rating_count: number
+          total: number
+        }[]
+      }
+      can_manage_report: {
+        Args: { _area_id: string; _assigned: string; _user_id: string }
+        Returns: boolean
+      }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
           _user_id: string
         }
         Returns: boolean
+      }
+      is_area_admin: { Args: { _user_id: string }; Returns: boolean }
+      rate_report: {
+        Args: { _rating: number; _report_id: string }
+        Returns: undefined
       }
     }
     Enums: {

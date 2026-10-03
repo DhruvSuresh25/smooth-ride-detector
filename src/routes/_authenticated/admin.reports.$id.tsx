@@ -21,7 +21,9 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Textarea } from "@/components/ui/textarea";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
-import { STATUSES, formatDateTime, type ReportStatus } from "@/lib/constants";
+import { ADMIN_STATUSES, STATUSES, formatDateTime, isOverdue, type ReportStatus } from "@/lib/constants";
+import { useAreas, useStaffRole } from "@/lib/staff";
+import { useQuery } from "@tanstack/react-query";
 import { useReport, useReportHistory } from "@/lib/reports";
 import { useServerFn } from "@tanstack/react-start";
 import { notifyReportUpdate } from "@/lib/report-notify.functions";
@@ -50,7 +52,23 @@ function AdminReportDetailPage() {
   const { data: report, isLoading } = useReport(id);
   const { data: history } = useReportHistory(id);
 
-  const [status, setStatus] = useState<ReportStatus>("Pending");
+  const [status, setStatus] = useState<ReportStatus>("Submitted");
+  const { data: role } = useStaffRole();
+  const isSuper = !!role?.isSuper;
+  const { data: areas } = useAreas();
+  const [areaId, setAreaId] = useState<string>("none");
+  const [assignee, setAssignee] = useState<string>("none");
+  const { data: areaAdmins } = useQuery({
+    queryKey: ["area-admin-options"],
+    enabled: isSuper,
+    queryFn: async () => {
+      const { data: ids } = await supabase.from("area_admins").select("user_id");
+      const list = (ids ?? []).map((r) => r.user_id);
+      if (!list.length) return [];
+      const { data } = await supabase.from("profiles").select("id, full_name, email").in("id", list);
+      return data ?? [];
+    },
+  });
   const [notes, setNotes] = useState("");
   const [saving, setSaving] = useState(false);
   const notify = useServerFn(notifyReportUpdate);
@@ -59,6 +77,8 @@ function AdminReportDetailPage() {
     if (report) {
       setStatus(report.status);
       setNotes(report.admin_notes ?? "");
+      setAreaId(report.area_id ?? "none");
+      setAssignee(report.assigned_admin_id ?? "none");
     }
   }, [report]);
 
@@ -67,7 +87,16 @@ function AdminReportDetailPage() {
     setSaving(true);
     const { error } = await supabase
       .from("reports")
-      .update({ status, admin_notes: notes.trim() || null })
+      .update({
+        status,
+        admin_notes: notes.trim() || null,
+        ...(isSuper
+          ? {
+              area_id: areaId === "none" ? null : areaId,
+              assigned_admin_id: assignee === "none" ? null : assignee,
+            }
+          : {}),
+      })
       .eq("id", report.id);
 
     if (error) {
@@ -97,15 +126,17 @@ function AdminReportDetailPage() {
       queryClient.invalidateQueries({ queryKey: ["report-history", report.id] }),
       queryClient.invalidateQueries({ queryKey: ["reports"] }),
     ]);
-    let emailNote = "The citizen has been emailed.";
-    try {
+    let emailNote = "";
+    if (isSuper) try {
+      emailNote = "The citizen has been emailed.";
       const res = await notify({ data: { reportId: report.id } });
       if (!res.sent) emailNote = "No email sent (citizen turned off emails or unsubscribed).";
     } catch {
       emailNote = "Saved, but the email to the citizen could not be sent.";
     }
+    void queryClient.invalidateQueries({ queryKey: ["performance"] });
     setSaving(false);
-    toast.success("Report updated", { description: `Status set to ${status}. ${emailNote}` });
+    toast.success("Report updated", { description: `Status set to ${status}. ${emailNote}`.trim() });
   }
 
   if (isLoading) {
@@ -151,6 +182,7 @@ function AdminReportDetailPage() {
           <section className="surface-card p-5">
             <div className="flex flex-wrap items-center gap-2">
               <StatusBadge status={report.status} />
+              {isOverdue(report) && <StatusBadge status="Overdue" />}
               <SeverityBadge severity={report.severity} />
               <span className="text-sm text-muted-foreground">
                 {report.pothole_count} pothole(s) detected
@@ -201,6 +233,12 @@ function AdminReportDetailPage() {
               <Detail label="Submitted by" value={report.submitter_name || "—"} />
               <Detail label="Email" value={report.submitter_email} />
               <Detail label="Submitted" value={formatDateTime(report.created_at)} />
+              <Detail label="Fix deadline" value={formatDateTime(report.deadline_at)} />
+              <Detail label="Area" value={areas?.find((a) => a.id === report.area_id)?.name ?? "Not set"} />
+              <Detail
+                label="Citizen rating"
+                value={report.citizen_rating != null ? `${report.citizen_rating} / 5` : "Not rated"}
+              />
               <div className="sm:col-span-2">
                 <Detail label="Address" value={report.address || "Not provided"} />
               </div>
@@ -242,7 +280,7 @@ function AdminReportDetailPage() {
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
-                    {STATUSES.map((s) => (
+                    {(isSuper ? STATUSES : [report.status, ...ADMIN_STATUSES.filter((s) => s !== report.status)]).map((s) => (
                       <SelectItem key={s} value={s}>
                         {s}
                       </SelectItem>
@@ -250,6 +288,34 @@ function AdminReportDetailPage() {
                   </SelectContent>
                 </Select>
               </div>
+              {isSuper && (
+                <>
+                  <div className="space-y-2">
+                    <Label htmlFor="area-select">Area</Label>
+                    <Select value={areaId} onValueChange={setAreaId}>
+                      <SelectTrigger id="area-select"><SelectValue /></SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="none">No area</SelectItem>
+                        {(areas ?? []).map((a) => (
+                          <SelectItem key={a.id} value={a.id}>{a.name}</SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="assignee-select">Assigned area admin</Label>
+                    <Select value={assignee} onValueChange={setAssignee}>
+                      <SelectTrigger id="assignee-select"><SelectValue /></SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="none">Unassigned</SelectItem>
+                        {(areaAdmins ?? []).map((a) => (
+                          <SelectItem key={a.id} value={a.id}>{a.full_name || a.email}</SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </>
+              )}
               <div className="space-y-2">
                 <Label htmlFor="admin-notes">Admin notes</Label>
                 <Textarea

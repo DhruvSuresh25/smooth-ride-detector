@@ -16,6 +16,10 @@ const STATUS_LINES: Record<string, string> = {
   'Under Review': 'Our team has started reviewing your report.',
   'Action Taken': 'Repair work has been scheduled or started for this pothole.',
   'Resolved': 'Good news — this pothole has been repaired. Thank you for helping make the roads safer!',
+  'Submitted': 'Your report is waiting in the queue for review.',
+  'Received': 'Your area admin has received your report.',
+  'In Progress': 'Repair work has started on this pothole.',
+  'Fixed': 'Good news — this pothole has been fixed. You can now rate the repair in the app.',
   'Rejected': 'After review, our team could not take action on this report.',
 }
 
@@ -60,7 +64,7 @@ export const template = {
   previewData: {
     name: 'Jane',
     reportNumber: 'RPT-0001',
-    status: 'Under Review',
+    status: 'Received',
     note: 'An inspector will visit the site this week.',
     address: 'MG Road, Bengaluru',
     reportUrl: 'https://drivesafevision.com/reports',
