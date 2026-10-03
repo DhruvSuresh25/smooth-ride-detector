@@ -39,7 +39,7 @@ function AdminAnalyticsPage() {
 
   if (isLoading) {
     return (
-      <AdminShell title="Analytics">
+      <AdminShell superOnly title="Analytics">
         <div className="surface-card grid place-items-center gap-2 p-12 text-sm text-muted-foreground">
           <Loader2 className="size-5 animate-spin text-primary" aria-hidden="true" />
           Crunching numbers…
@@ -49,7 +49,7 @@ function AdminAnalyticsPage() {
   }
 
   return (
-    <AdminShell title="Analytics" subtitle="Patterns across every submitted report">
+    <AdminShell superOnly title="Analytics" subtitle="Patterns across every submitted report">
       <section className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4" aria-label="Summary metrics">
         <StatCard label="Reports analysed" value={all.length} tone="primary" />
         <StatCard label="Potholes detected" value={totalPotholes} tone="high" />
