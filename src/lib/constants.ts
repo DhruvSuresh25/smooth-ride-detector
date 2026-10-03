@@ -1,21 +1,17 @@
 export const SEVERITIES = ["Low", "Medium", "High", "Critical"] as const;
 export type Severity = (typeof SEVERITIES)[number];
 
-export const STATUSES = [
-  "Pending",
-  "Under Review",
-  "Action Taken",
-  "Resolved",
-  "Rejected",
-] as const;
+export const STATUSES = ["Submitted", "Received", "In Progress", "Fixed", "Rejected"] as const;
 export type ReportStatus = (typeof STATUSES)[number];
 
-export const TIMELINE_STEPS: ReportStatus[] = [
-  "Pending",
-  "Under Review",
-  "Action Taken",
-  "Resolved",
-];
+export const TIMELINE_STEPS: ReportStatus[] = ["Submitted", "Received", "In Progress", "Fixed"];
+
+/** Statuses an area admin may set. */
+export const ADMIN_STATUSES: ReportStatus[] = ["Received", "In Progress", "Fixed", "Rejected"];
+
+export function isOverdue(r: { status: string; deadline_at: string | null }) {
+  return !!r.deadline_at && r.status !== "Fixed" && r.status !== "Rejected" && new Date(r.deadline_at) < new Date();
+}
 
 export const severityClasses: Record<Severity, string> = {
   Low: "bg-sev-low-bg text-sev-low border-sev-low/25",
@@ -25,10 +21,10 @@ export const severityClasses: Record<Severity, string> = {
 };
 
 export const statusClasses: Record<ReportStatus, string> = {
-  Pending: "bg-sev-medium-bg text-sev-medium border-sev-medium/25",
-  "Under Review": "bg-primary-soft text-primary border-primary/25",
-  "Action Taken": "bg-accent text-accent-foreground border-primary/25",
-  Resolved: "bg-sev-low-bg text-sev-low border-sev-low/25",
+  Submitted: "bg-sev-medium-bg text-sev-medium border-sev-medium/25",
+  Received: "bg-primary-soft text-primary border-primary/25",
+  "In Progress": "bg-accent text-accent-foreground border-primary/25",
+  Fixed: "bg-sev-low-bg text-sev-low border-sev-low/25",
   Rejected: "bg-muted text-muted-foreground border-border",
 };
 

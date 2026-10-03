@@ -27,6 +27,11 @@ export type Report = {
   created_at: string;
   updated_at: string;
   resolved_at: string | null;
+  area_id: string | null;
+  assigned_admin_id: string | null;
+  deadline_at: string | null;
+  citizen_rating: number | null;
+  rated_at: string | null;
 };
 
 export type StatusEvent = {
