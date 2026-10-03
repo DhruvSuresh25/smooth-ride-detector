@@ -3,7 +3,6 @@ import { Eye, MapPin } from "lucide-react";
 
 import { SeverityBadge, StatusBadge } from "@/components/SeverityBadge";
 import { Button } from "@/components/ui/button";
-import { isOverdue, timeLeft } from "@/lib/constants";
 import {
   Table,
   TableBody,
@@ -12,7 +11,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { formatDate } from "@/lib/constants";
+import { formatDate, isOverdue, timeLeft } from "@/lib/constants";
 import type { Report } from "@/lib/reports";
 
 export function ReportsTable({
