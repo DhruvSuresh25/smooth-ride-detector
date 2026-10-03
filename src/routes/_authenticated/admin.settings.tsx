@@ -87,7 +87,7 @@ export const Route = createFileRoute("/_authenticated/admin/settings")({
 
 function AdminSettingsPage() {
   return (
-    <AdminShell title="Settings" subtitle="How this deployment is configured">
+    <AdminShell superOnly title="Settings" subtitle="How this deployment is configured">
       <div className="grid gap-5 lg:grid-cols-2">
         <section className="surface-card p-5">
           <h2 className="flex items-center gap-2 font-bold">
