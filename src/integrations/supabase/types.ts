@@ -67,17 +67,23 @@ export type Database = {
       app_settings: {
         Row: {
           default_deadline_days: number
+          good_threshold: number
           id: number
+          poor_threshold: number
           updated_at: string
         }
         Insert: {
           default_deadline_days?: number
+          good_threshold?: number
           id?: number
+          poor_threshold?: number
           updated_at?: string
         }
         Update: {
           default_deadline_days?: number
+          good_threshold?: number
           id?: number
+          poor_threshold?: number
           updated_at?: string
         }
         Relationships: []
@@ -147,6 +153,106 @@ export type Database = {
           name?: string
         }
         Relationships: []
+      }
+      audit_log: {
+        Row: {
+          action: string
+          actor_id: string | null
+          created_at: string
+          details: Json
+          id: string
+        }
+        Insert: {
+          action: string
+          actor_id?: string | null
+          created_at?: string
+          details?: Json
+          id?: string
+        }
+        Update: {
+          action?: string
+          actor_id?: string | null
+          created_at?: string
+          details?: Json
+          id?: string
+        }
+        Relationships: []
+      }
+      deadline_rules: {
+        Row: {
+          area_id: string | null
+          created_at: string
+          days: number
+          id: string
+          severity: string | null
+        }
+        Insert: {
+          area_id?: string | null
+          created_at?: string
+          days: number
+          id?: string
+          severity?: string | null
+        }
+        Update: {
+          area_id?: string | null
+          created_at?: string
+          days?: number
+          id?: string
+          severity?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "deadline_rules_area_id_fkey"
+            columns: ["area_id"]
+            isOneToOne: false
+            referencedRelation: "areas"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      notifications: {
+        Row: {
+          body: string
+          created_at: string
+          dedupe_key: string | null
+          id: string
+          link: string | null
+          read_at: string | null
+          report_id: string | null
+          title: string
+          user_id: string
+        }
+        Insert: {
+          body?: string
+          created_at?: string
+          dedupe_key?: string | null
+          id?: string
+          link?: string | null
+          read_at?: string | null
+          report_id?: string | null
+          title: string
+          user_id: string
+        }
+        Update: {
+          body?: string
+          created_at?: string
+          dedupe_key?: string | null
+          id?: string
+          link?: string | null
+          read_at?: string | null
+          report_id?: string | null
+          title?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "notifications_report_id_fkey"
+            columns: ["report_id"]
+            isOneToOne: false
+            referencedRelation: "reports"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       profiles: {
         Row: {
@@ -226,8 +332,10 @@ export type Database = {
           annotated_image_url: string | null
           area_id: string | null
           assigned_admin_id: string | null
+          citizen_comment: string | null
           citizen_rating: number | null
           confidence: number | null
+          confirmed_fixed: boolean | null
           created_at: string
           deadline_at: string | null
           description: string | null
@@ -237,8 +345,10 @@ export type Database = {
           latitude: number | null
           longitude: number | null
           original_image_url: string | null
+          overdue_notified_at: string | null
           pothole_count: number
           rated_at: string | null
+          repair_image_url: string | null
           report_number: string
           resolved_at: string | null
           road_position: string | null
@@ -255,8 +365,10 @@ export type Database = {
           annotated_image_url?: string | null
           area_id?: string | null
           assigned_admin_id?: string | null
+          citizen_comment?: string | null
           citizen_rating?: number | null
           confidence?: number | null
+          confirmed_fixed?: boolean | null
           created_at?: string
           deadline_at?: string | null
           description?: string | null
@@ -266,8 +378,10 @@ export type Database = {
           latitude?: number | null
           longitude?: number | null
           original_image_url?: string | null
+          overdue_notified_at?: string | null
           pothole_count?: number
           rated_at?: string | null
+          repair_image_url?: string | null
           report_number?: string
           resolved_at?: string | null
           road_position?: string | null
@@ -284,8 +398,10 @@ export type Database = {
           annotated_image_url?: string | null
           area_id?: string | null
           assigned_admin_id?: string | null
+          citizen_comment?: string | null
           citizen_rating?: number | null
           confidence?: number | null
+          confirmed_fixed?: boolean | null
           created_at?: string
           deadline_at?: string | null
           description?: string | null
@@ -295,8 +411,10 @@ export type Database = {
           latitude?: number | null
           longitude?: number | null
           original_image_url?: string | null
+          overdue_notified_at?: string | null
           pothole_count?: number
           rated_at?: string | null
+          repair_image_url?: string | null
           report_number?: string
           resolved_at?: string | null
           road_position?: string | null
@@ -367,6 +485,10 @@ export type Database = {
         Args: { _area_id: string; _assigned: string; _user_id: string }
         Returns: boolean
       }
+      deadline_days_for: {
+        Args: { _area: string; _severity: string }
+        Returns: number
+      }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
@@ -375,10 +497,31 @@ export type Database = {
         Returns: boolean
       }
       is_area_admin: { Args: { _user_id: string }; Returns: boolean }
+      public_area_stats: {
+        Args: never
+        Returns: {
+          area_name: string
+          avg_fix_days: number
+          avg_rating: number
+          filed: number
+          fixed: number
+          on_time_rate: number
+        }[]
+      }
       rate_report: {
         Args: { _rating: number; _report_id: string }
         Returns: undefined
       }
+      submit_feedback: {
+        Args: {
+          _comment: string
+          _confirmed: boolean
+          _rating: number
+          _report_id: string
+        }
+        Returns: undefined
+      }
+      sync_overdue: { Args: never; Returns: number }
     }
     Enums: {
       app_role: "user" | "admin"
