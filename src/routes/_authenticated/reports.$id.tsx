@@ -7,7 +7,7 @@ import { UserShell } from "@/components/layout/Shells";
 import { StatusTimeline } from "@/components/reports/StatusTimeline";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { formatDateTime, isOverdue } from "@/lib/constants";
+import { formatDateTime, isOverdue, timeLeft } from "@/lib/constants";
 import { RateAndAdminCard } from "@/components/reports/RateAndAdminCard";
 import { useReport, useReportHistory } from "@/lib/reports";
 
@@ -75,6 +75,9 @@ function ReportDetailPage() {
             <div className="flex flex-wrap items-center gap-2">
               <StatusBadge status={report.status} />
               {isOverdue(report) && <StatusBadge status="Overdue" />}
+              {timeLeft(report) && !isOverdue(report) && (
+                <span className="text-xs font-medium text-muted-foreground">{timeLeft(report)}</span>
+              )}
               <SeverityBadge severity={report.severity} />
               <span className="text-sm text-muted-foreground">
                 {report.pothole_count} pothole(s) detected
@@ -168,6 +171,17 @@ function ReportDetailPage() {
           </section>
 
           <RateAndAdminCard report={report} />
+
+          {report.repair_image_url && (
+            <section className="surface-card p-5">
+              <h2 className="font-bold">After repair</h2>
+              <StorageImage
+                path={report.repair_image_url}
+                alt={`After-repair photo for ${report.report_number}`}
+                className="mt-3 max-h-64 w-full border border-border"
+              />
+            </section>
+          )}
 
           {report.admin_notes && (
             <section className="surface-card p-5">
