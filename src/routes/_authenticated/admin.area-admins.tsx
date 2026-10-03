@@ -34,7 +34,7 @@ import {
   setAreaAdminStatus,
   updateAreaAdmin,
 } from "@/lib/area-admins.functions";
-import { formatRate, formatRating, useAreas, usePerformance, type Area } from "@/lib/staff";
+import { bandClasses, formatRate, formatRating, performanceBand, useAreas, usePerformance, useThresholds, type Area } from "@/lib/staff";
 
 export const Route = createFileRoute("/_authenticated/admin/area-admins")({
   staticData: { sitemap: false },
@@ -193,6 +193,8 @@ function AdminCard({
   const qc = useQueryClient();
   const { user } = useAuth();
   const { data: perf } = usePerformance(admin.user_id);
+  const { data: thresholds } = useThresholds();
+  const band = performanceBand(perf, thresholds);
   const setStatus = useServerFn(setAreaAdminStatus);
   const del = useServerFn(deleteAreaAdmin);
   const [editing, setEditing] = useState(false);
@@ -237,6 +239,11 @@ function AdminCard({
             ))}
             {!admin.areaIds.length && <Badge variant="outline">No areas</Badge>}
             {suspended && <Badge variant="destructive">Suspended</Badge>}
+            {band && (
+              <Badge variant="outline" className={bandClasses[band]}>
+                {band} performance
+              </Badge>
+            )}
           </div>
         </div>
         <dl className="grid grid-cols-3 gap-4 text-sm">
@@ -411,7 +418,7 @@ function ReassignDialog({
       .from("reports")
       .update({ assigned_admin_id: target })
       .eq("assigned_admin_id", admin.user_id)
-      .not("status", "in", "(Fixed,Rejected)")
+      .not("status", "in", "(Fixed,Rejected,Duplicate)")
       .select("id");
     if (error) return void toast.error("Could not reassign", { description: error.message });
     toast.success(`${data?.length ?? 0} open complaint(s) reassigned`);

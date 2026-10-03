@@ -11,7 +11,7 @@ export function StatusTimeline({
   report: Report;
   events: StatusEvent[];
 }) {
-  const rejected = report.status === "Rejected";
+  const rejected = report.status === "Rejected" || report.status === "Duplicate";
   const currentIndex = TIMELINE_STEPS.indexOf(report.status as (typeof TIMELINE_STEPS)[number]);
 
   const steps = [
@@ -81,9 +81,9 @@ export function StatusTimeline({
             <XCircle className="size-4" aria-hidden="true" />
           </span>
           <div>
-            <p className="text-sm font-semibold">Rejected</p>
+            <p className="text-sm font-semibold">{report.status === "Duplicate" ? "Marked duplicate" : "Rejected"}</p>
             <p className="text-xs text-muted-foreground">
-              {formatDateTime(events.find((e) => e.status === "Rejected")?.created_at ?? report.updated_at)}
+              {formatDateTime(events.find((e) => e.status === report.status)?.created_at ?? report.updated_at)}
             </p>
             {report.admin_notes && (
               <p className="mt-1 text-sm text-muted-foreground">{report.admin_notes}</p>

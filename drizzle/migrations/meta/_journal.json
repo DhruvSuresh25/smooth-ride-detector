@@ -43,6 +43,13 @@
       "when": 1791051527242,
       "tag": "0005_area_admins_workflow",
       "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1791052585208,
+      "tag": "0006_accountability_extras",
+      "breakpoints": true
     }
   ]
 }

@@ -1,16 +1,29 @@
 export const SEVERITIES = ["Low", "Medium", "High", "Critical"] as const;
 export type Severity = (typeof SEVERITIES)[number];
 
-export const STATUSES = ["Submitted", "Received", "In Progress", "Fixed", "Rejected"] as const;
+export const STATUSES = ["Submitted", "Received", "In Progress", "Fixed", "Rejected", "Duplicate"] as const;
 export type ReportStatus = (typeof STATUSES)[number];
 
 export const TIMELINE_STEPS: ReportStatus[] = ["Submitted", "Received", "In Progress", "Fixed"];
 
 /** Statuses an area admin may set. */
-export const ADMIN_STATUSES: ReportStatus[] = ["Received", "In Progress", "Fixed", "Rejected"];
+export const ADMIN_STATUSES: ReportStatus[] = ["Received", "In Progress", "Fixed", "Rejected", "Duplicate"];
 
 export function isOverdue(r: { status: string; deadline_at: string | null }) {
-  return !!r.deadline_at && r.status !== "Fixed" && r.status !== "Rejected" && new Date(r.deadline_at) < new Date();
+  return !!r.deadline_at && !CLOSED_STATUSES.includes(r.status) && new Date(r.deadline_at) < new Date();
+}
+
+export const CLOSED_STATUSES: string[] = ["Fixed", "Rejected", "Duplicate"];
+
+/** "3 days left", "5 hours left", "Overdue by 2 days"; null when closed or no deadline. */
+export function timeLeft(r: { status: string; deadline_at: string | null }) {
+  if (!r.deadline_at || CLOSED_STATUSES.includes(r.status)) return null;
+  const ms = new Date(r.deadline_at).getTime() - Date.now();
+  const abs = Math.abs(ms);
+  const days = Math.floor(abs / 86400000);
+  const hours = Math.floor(abs / 3600000);
+  const span = days >= 1 ? `${days} day${days > 1 ? "s" : ""}` : `${Math.max(hours, 1)} hour${hours > 1 ? "s" : ""}`;
+  return ms >= 0 ? `${span} left` : `Overdue by ${span}`;
 }
 
 export const severityClasses: Record<Severity, string> = {
@@ -26,6 +39,7 @@ export const statusClasses: Record<ReportStatus, string> = {
   "In Progress": "bg-accent text-accent-foreground border-primary/25",
   Fixed: "bg-sev-low-bg text-sev-low border-sev-low/25",
   Rejected: "bg-muted text-muted-foreground border-border",
+  Duplicate: "bg-muted text-muted-foreground border-border",
 };
 
 export const APP_NAME = "DriveSafe Vision";

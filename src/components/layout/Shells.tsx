@@ -5,6 +5,8 @@ import {
   FileStack,
   LayoutDashboard,
   Loader2,
+  Map as MapIcon,
+  ScrollText,
   MapPinned,
   ScanSearch,
   Settings,
@@ -22,6 +24,8 @@ const userNav: NavItem[] = [
   { to: "/analyze", label: "Analyze Image", icon: ScanSearch },
   { to: "/reports", label: "My Reports", icon: ClipboardList },
   { to: "/profile", label: "Profile & Settings", icon: UserCog },
+  { to: "/map", label: "Map", icon: MapIcon },
+  { to: "/area-stats", label: "Area Stats", icon: BarChart3 },
 ];
 
 const superNav: NavItem[] = [
@@ -30,12 +34,15 @@ const superNav: NavItem[] = [
   { to: "/admin/area-admins", label: "Area Admins", icon: MapPinned },
   { to: "/admin/users", label: "Users", icon: Users },
   { to: "/admin/analytics", label: "Analytics", icon: BarChart3 },
+  { to: "/admin/map", label: "Map", icon: MapIcon },
+  { to: "/admin/audit-log", label: "Audit Log", icon: ScrollText },
   { to: "/admin/settings", label: "Settings", icon: Settings },
 ];
 
 const areaNav: NavItem[] = [
   { to: "/admin/dashboard", label: "Overview", icon: LayoutDashboard },
   { to: "/admin/reports", label: "My Area Complaints", icon: FileStack },
+  { to: "/admin/map", label: "Map", icon: MapIcon },
 ];
 
 export function UserShell(props: {

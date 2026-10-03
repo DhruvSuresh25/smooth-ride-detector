@@ -11,3 +11,6 @@
 
 - Keep sign-in diagnostics in `auth-errors.ts` and AI recovery behind a public `createServerFn`; this centralizes safe messaging and keeps prompts and credentials server-side.
 - MCP server lives in src/lib/mcp/ with Supabase OAuth; tools use supabaseForUser so RLS runs as the caller.
+- In-app notifications and audit entries are written only by database triggers/security-definer functions (notify_report_events, audit_trigger, sync_overdue); clients never insert them, so they can't be forged.
+- Overdue notices are raised by sync_overdue() when a staff member opens the app, not a cron job, to avoid a constantly running database.
+- Leaflet is loaded via dynamic import inside ReportsMap's effect so SSR never evaluates it.

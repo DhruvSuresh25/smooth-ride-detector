@@ -10,7 +10,7 @@ export default defineTool({
     "List pothole reports visible to the signed-in user (their own, or all reports for admins), newest first.",
   inputSchema: {
     status: z
-      .enum(["Submitted", "Received", "In Progress", "Fixed", "Rejected"])
+      .enum(["Submitted", "Received", "In Progress", "Fixed", "Rejected", "Duplicate"])
       .optional()
       .describe("Only return reports with this status."),
     severity: z.enum(["Low", "Medium", "High", "Critical"]).optional().describe("Only this severity."),

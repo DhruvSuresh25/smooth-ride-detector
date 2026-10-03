@@ -32,6 +32,9 @@ export type Report = {
   deadline_at: string | null;
   citizen_rating: number | null;
   rated_at: string | null;
+  citizen_comment: string | null;
+  confirmed_fixed: boolean | null;
+  repair_image_url: string | null;
 };
 
 export type StatusEvent = {

@@ -11,7 +11,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { formatDate } from "@/lib/constants";
+import { formatDate, isOverdue, timeLeft } from "@/lib/constants";
 import type { Report } from "@/lib/reports";
 
 export function ReportsTable({
@@ -69,6 +69,11 @@ export function ReportsTable({
                 </TableCell>
                 <TableCell>
                   <StatusBadge status={report.status} />
+                  {timeLeft(report) && (
+                    <p className={isOverdue(report) ? "mt-1 text-xs font-semibold text-sev-critical" : "mt-1 text-xs text-muted-foreground"}>
+                      {timeLeft(report)}
+                    </p>
+                  )}
                 </TableCell>
                 <TableCell className="text-right">
                   <Button asChild variant="outline" size="sm" className="gap-1.5">
