@@ -1,8 +1,9 @@
 import { Link, useRouterState } from "@tanstack/react-router";
-import { Bell, LogOut, Menu, Settings, UserRound } from "lucide-react";
+import { LogOut, Menu, Settings, UserRound } from "lucide-react";
 import { useState, type ComponentType, type ReactNode } from "react";
 
 import { Logo } from "@/components/brand/Logo";
+import { NotificationBell } from "@/components/layout/NotificationBell";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import {
@@ -129,14 +130,7 @@ export function AppShell({
 
             <div className="flex items-center gap-2">
               <div className="hidden sm:block">{actions}</div>
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <Button variant="ghost" size="icon" aria-label="Notifications">
-                    <Bell className="size-5" />
-                  </Button>
-                </TooltipTrigger>
-                <TooltipContent>No new notifications</TooltipContent>
-              </Tooltip>
+              <NotificationBell />
 
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
