@@ -3,6 +3,7 @@ import { Eye, MapPin } from "lucide-react";
 
 import { SeverityBadge, StatusBadge } from "@/components/SeverityBadge";
 import { Button } from "@/components/ui/button";
+import { isOverdue, timeLeft } from "@/lib/constants";
 import {
   Table,
   TableBody,
@@ -69,6 +70,11 @@ export function ReportsTable({
                 </TableCell>
                 <TableCell>
                   <StatusBadge status={report.status} />
+                  {timeLeft(report) && (
+                    <p className={isOverdue(report) ? "mt-1 text-xs font-semibold text-sev-critical" : "mt-1 text-xs text-muted-foreground"}>
+                      {timeLeft(report)}
+                    </p>
+                  )}
                 </TableCell>
                 <TableCell className="text-right">
                   <Button asChild variant="outline" size="sm" className="gap-1.5">
