@@ -188,7 +188,8 @@ function AnalyzePage() {
           estimated_height: result.estimatedHeight,
           road_position: result.roadPosition,
           description: description.trim() || null,
-          status: "Pending",
+          status: "Submitted",
+          area_id: areaId || null,
         })
         .select("id, report_number")
         .single();

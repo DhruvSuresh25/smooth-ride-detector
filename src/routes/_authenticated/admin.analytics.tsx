@@ -33,7 +33,7 @@ function AdminAnalyticsPage() {
   const all = reports ?? [];
   const avgDays = averageResolutionDays(all);
   const resolutionRate = all.length
-    ? Math.round((countByStatus(all, "Resolved") / all.length) * 100)
+    ? Math.round((countByStatus(all, "Fixed") / all.length) * 100)
     : 0;
   const totalPotholes = all.reduce((sum, r) => sum + r.pothole_count, 0);
 
