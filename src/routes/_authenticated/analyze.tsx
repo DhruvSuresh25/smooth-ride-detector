@@ -1,4 +1,5 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
+import { ReportsMap } from "@/components/map/ReportsMap";
 import { useQueryClient } from "@tanstack/react-query";
 import {
   AlertTriangle,
@@ -319,6 +320,11 @@ function AnalyzePage() {
                 )}
                 Use My Current Location
               </Button>
+
+              <div className="space-y-2">
+                <p className="text-sm font-medium">Or tap the map to drop a pin</p>
+                <ReportsMap pick={coords} onPick={(p) => setCoords(p)} height={260} />
+              </div>
 
               <div className="grid gap-3 sm:grid-cols-2">
                 <div className="space-y-2">
