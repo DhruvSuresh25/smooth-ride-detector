@@ -241,7 +241,9 @@ function Landing() {
           </nav>
         </div>
         <p className="border-t border-border px-5 py-4 text-center text-xs text-muted-foreground">
-          © {new Date().getFullYear()} {APP_NAME}. All rights reserved.
+          © {new Date().getFullYear()} {APP_NAME}. All rights reserved by{" "}
+          <span className="font-semibold text-foreground">Dhruvva Suresh</span>.
+          <span className="mt-1 block">Designed &amp; developed by Dhruvva Suresh</span>
         </p>
       </footer>
     </div>
