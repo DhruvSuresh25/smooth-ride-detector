@@ -34,7 +34,6 @@ import { Route as AuthenticatedAdminSettingsRouteImport } from './routes/_authen
 import { Route as AuthenticatedAdminUsersRouteImport } from './routes/_authenticated/admin.users'
 import { Route as AuthenticatedReportsIndexRouteImport } from './routes/_authenticated/reports.index'
 import { Route as AuthenticatedReportsIdRouteImport } from './routes/_authenticated/reports.$id'
-import { Route as ApiPublicTmpBootstrapRouteImport } from './routes/api/public/tmp-bootstrap'
 import { Route as AuthenticatedAdminReportsIndexRouteImport } from './routes/_authenticated/admin.reports.index'
 import { Route as AuthenticatedAdminReportsIdRouteImport } from './routes/_authenticated/admin.reports.$id'
 import { Route as LovableEmailAuthPreviewRouteImport } from './routes/lovable/email/auth/preview'
@@ -172,11 +171,6 @@ const AuthenticatedReportsIdRoute = AuthenticatedReportsIdRouteImport.update({
   path: '/reports/$id',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
-const ApiPublicTmpBootstrapRoute = ApiPublicTmpBootstrapRouteImport.update({
-  id: '/api/public/tmp-bootstrap',
-  path: '/api/public/tmp-bootstrap',
-  getParentRoute: () => rootRouteImport,
-} as any)
 const AuthenticatedAdminReportsIndexRoute =
   AuthenticatedAdminReportsIndexRouteImport.update({
     id: '/admin/reports/',
@@ -230,7 +224,6 @@ export interface FileRoutesByFullPath {
   '/admin/settings': typeof AuthenticatedAdminSettingsRoute
   '/admin/users': typeof AuthenticatedAdminUsersRoute
   '/reports/$id': typeof AuthenticatedReportsIdRoute
-  '/api/public/tmp-bootstrap': typeof ApiPublicTmpBootstrapRoute
   '/reports/': typeof AuthenticatedReportsIndexRoute
   '/admin/reports/$id': typeof AuthenticatedAdminReportsIdRoute
   '/lovable/email/auth/preview': typeof LovableEmailAuthPreviewRoute
@@ -262,7 +255,6 @@ export interface FileRoutesByTo {
   '/admin/settings': typeof AuthenticatedAdminSettingsRoute
   '/admin/users': typeof AuthenticatedAdminUsersRoute
   '/reports/$id': typeof AuthenticatedReportsIdRoute
-  '/api/public/tmp-bootstrap': typeof ApiPublicTmpBootstrapRoute
   '/reports': typeof AuthenticatedReportsIndexRoute
   '/admin/reports/$id': typeof AuthenticatedAdminReportsIdRoute
   '/lovable/email/auth/preview': typeof LovableEmailAuthPreviewRoute
@@ -296,7 +288,6 @@ export interface FileRoutesById {
   '/_authenticated/admin/settings': typeof AuthenticatedAdminSettingsRoute
   '/_authenticated/admin/users': typeof AuthenticatedAdminUsersRoute
   '/_authenticated/reports/$id': typeof AuthenticatedReportsIdRoute
-  '/api/public/tmp-bootstrap': typeof ApiPublicTmpBootstrapRoute
   '/_authenticated/reports/': typeof AuthenticatedReportsIndexRoute
   '/_authenticated/admin/reports/$id': typeof AuthenticatedAdminReportsIdRoute
   '/lovable/email/auth/preview': typeof LovableEmailAuthPreviewRoute
@@ -330,7 +321,6 @@ export interface FileRouteTypes {
     | '/admin/settings'
     | '/admin/users'
     | '/reports/$id'
-    | '/api/public/tmp-bootstrap'
     | '/reports/'
     | '/admin/reports/$id'
     | '/lovable/email/auth/preview'
@@ -362,7 +352,6 @@ export interface FileRouteTypes {
     | '/admin/settings'
     | '/admin/users'
     | '/reports/$id'
-    | '/api/public/tmp-bootstrap'
     | '/reports'
     | '/admin/reports/$id'
     | '/lovable/email/auth/preview'
@@ -395,7 +384,6 @@ export interface FileRouteTypes {
     | '/_authenticated/admin/settings'
     | '/_authenticated/admin/users'
     | '/_authenticated/reports/$id'
-    | '/api/public/tmp-bootstrap'
     | '/_authenticated/reports/'
     | '/_authenticated/admin/reports/$id'
     | '/lovable/email/auth/preview'
@@ -417,7 +405,6 @@ export interface RootRouteChildren {
   Char91DotwellKnownChar93OauthProtectedResourceRoute: typeof Char91DotwellKnownChar93OauthProtectedResourceRoute
   AdminLoginRoute: typeof AdminLoginRoute
   DotlovableOauthConsentRoute: typeof DotlovableOauthConsentRoute
-  ApiPublicTmpBootstrapRoute: typeof ApiPublicTmpBootstrapRoute
   LovableEmailAuthPreviewRoute: typeof LovableEmailAuthPreviewRoute
   LovableEmailAuthWebhookRoute: typeof LovableEmailAuthWebhookRoute
   LovableEmailTransactionalPreviewRoute: typeof LovableEmailTransactionalPreviewRoute
@@ -600,13 +587,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedReportsIdRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
-    '/api/public/tmp-bootstrap': {
-      id: '/api/public/tmp-bootstrap'
-      path: '/api/public/tmp-bootstrap'
-      fullPath: '/api/public/tmp-bootstrap'
-      preLoaderRoute: typeof ApiPublicTmpBootstrapRouteImport
-      parentRoute: typeof rootRouteImport
-    }
     '/_authenticated/admin/reports/': {
       id: '/_authenticated/admin/reports/'
       path: '/admin/reports'
@@ -698,7 +678,6 @@ const rootRouteChildren: RootRouteChildren = {
     Char91DotwellKnownChar93OauthProtectedResourceRoute,
   AdminLoginRoute: AdminLoginRoute,
   DotlovableOauthConsentRoute: DotlovableOauthConsentRoute,
-  ApiPublicTmpBootstrapRoute: ApiPublicTmpBootstrapRoute,
   LovableEmailAuthPreviewRoute: LovableEmailAuthPreviewRoute,
   LovableEmailAuthWebhookRoute: LovableEmailAuthWebhookRoute,
   LovableEmailTransactionalPreviewRoute: LovableEmailTransactionalPreviewRoute,
