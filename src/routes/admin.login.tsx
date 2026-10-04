@@ -77,8 +77,8 @@ function AdminLoginPage() {
 
   return (
     <AuthLayout
-      title="Administrator sign in"
-      description="Restricted to road maintenance staff with an administrator role."
+      title="Admin &amp; super admin sign in"
+      description="For the super admin and area admins. Super admins get the full control panel."
       footer={
         <span>
           Not an administrator?{" "}
