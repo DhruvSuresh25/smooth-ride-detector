@@ -47,7 +47,6 @@ export const createAreaAdmin = createServerFn({ method: "POST" })
       .maybeSingle();
 
     let id = existing?.id;
-    let newAccount = false;
     let actionUrl = `${site}/admin/login`;
     const fullName = data.fullName || existing?.full_name || "";
 
@@ -61,7 +60,6 @@ export const createAreaAdmin = createServerFn({ method: "POST" })
         return { ok: false as const, error: error?.message ?? "Could not create the account" };
       }
       id = created.user.id;
-      newAccount = true;
       await supabaseAdmin.from("profiles").upsert({ id, full_name: fullName, email: data.email });
     }
     // Everyone gets a link in the email to set their own password for the admin portal.
