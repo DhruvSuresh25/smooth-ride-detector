@@ -99,7 +99,7 @@ function AreaAdminsPage() {
       subtitle="Create area admins, assign areas and track performance"
       actions={
         <Button size="sm" onClick={() => setCreating(true)} disabled={!areas?.length}>
-          <Plus className="size-4" aria-hidden="true" /> New area admin
+          <Plus className="size-4" aria-hidden="true" /> Add admin by email
         </Button>
       }
     >
@@ -217,11 +217,11 @@ function AdminCard({
   }
 
   async function remove() {
-    if (!confirm(`Delete ${admin.full_name || admin.email}? Their complaints stay and become unassigned.`))
+    if (!confirm(`Remove ${admin.full_name || admin.email} as an admin? Their account stays as a normal citizen account, and their complaints become unassigned.`))
       return;
     const res = await del({ data: { userId: admin.user_id } });
     if (!res.ok) return void toast.error("Could not delete", { description: res.error });
-    toast.success("Area admin deleted");
+    toast.success("Admin removed");
     refresh();
   }
 
@@ -260,7 +260,7 @@ function AdminCard({
           {suspended ? "Reactivate" : "Suspend"}
         </Button>
         <Button size="sm" variant="destructive" onClick={remove} disabled={admin.user_id === user?.id}>
-          Delete
+          Remove admin
         </Button>
       </div>
       {editing && <AdminFormDialog areas={areas} admin={admin} onClose={() => setEditing(false)} />}
@@ -295,22 +295,25 @@ function AdminFormDialog({
   const update = useServerFn(updateAreaAdmin);
   const [fullName, setFullName] = useState(admin?.full_name ?? "");
   const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
   const [areaIds, setAreaIds] = useState<string[]>(admin?.areaIds ?? []);
   const [busy, setBusy] = useState(false);
 
   async function save() {
-    if (!fullName.trim()) return void toast.error("Name is required");
-    if (!admin && (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email) || password.length < 8))
-      return void toast.error("Enter a valid email and a password of at least 8 characters");
+    if (admin && !fullName.trim()) return void toast.error("Name is required");
+    if (!admin && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim()))
+      return void toast.error("Enter a valid email address");
     setBusy(true);
     try {
       const res = admin
         ? await update({ data: { userId: admin.user_id, fullName, areaIds } })
-        : await create({ data: { email, fullName, password, areaIds } });
+        : await create({ data: { email: email.trim(), fullName, areaIds } });
       if (!res.ok) return void toast.error("Could not save", { description: res.error });
-      toast.success(admin ? "Area admin updated" : "Area admin created", {
-        description: admin ? undefined : "Share the sign-in details with them privately.",
+      toast.success(admin ? "Area admin updated" : "Area admin added", {
+        description: admin
+          ? undefined
+          : "emailSent" in res && res.emailSent
+            ? "An email telling them they've been selected is on its way."
+            : "They were added, but the email couldn't be sent right now.",
       });
       void qc.invalidateQueries({ queryKey: ["area-admins"] });
       onClose();
@@ -329,7 +332,7 @@ function AdminFormDialog({
         </DialogHeader>
         <div className="space-y-3">
           <div className="space-y-1.5">
-            <Label htmlFor="aa-name">Full name</Label>
+            <Label htmlFor="aa-name">Full name{admin ? "" : " (optional)"}</Label>
             <Input id="aa-name" value={fullName} onChange={(e) => setFullName(e.target.value)} />
           </div>
           {!admin && (
@@ -338,10 +341,10 @@ function AdminFormDialog({
                 <Label htmlFor="aa-email">Email</Label>
                 <Input id="aa-email" type="email" value={email} onChange={(e) => setEmail(e.target.value)} />
               </div>
-              <div className="space-y-1.5">
-                <Label htmlFor="aa-pass">Temporary password</Label>
-                <Input id="aa-pass" type="password" autoComplete="new-password" value={password} onChange={(e) => setPassword(e.target.value)} />
-              </div>
+              <p className="text-xs text-muted-foreground">
+                We'll email them that they've been selected as an admin of DriveSafe Vision. New
+                people get a link to set their own password.
+              </p>
             </>
           )}
           <fieldset className="space-y-2">

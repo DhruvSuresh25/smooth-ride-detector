@@ -1,5 +1,6 @@
 import type { ComponentType } from 'react'
 import { template as reportStatusUpdate } from './report-status-update'
+import { template as areaAdminSelected } from './area-admin-selected'
 
 export interface TemplateEntry {
   component: ComponentType<any>
@@ -20,6 +21,7 @@ export interface TemplateEntry {
  */
 export const TEMPLATES: Record<string, TemplateEntry> = {
   'report-status-update': reportStatusUpdate,
+  'area-admin-selected': areaAdminSelected,
   // Add templates here as they are created, e.g.:
   // 'welcome': welcomeTemplate,
 }

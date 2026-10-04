@@ -29,9 +29,8 @@ export const createAreaAdmin = createServerFn({ method: "POST" })
   .inputValidator((input) =>
     z
       .object({
-        email: z.string().trim().email().max(255),
-        fullName: z.string().trim().min(1).max(100),
-        password: z.string().min(8).max(72),
+        email: z.string().trim().toLowerCase().email().max(255),
+        fullName: z.string().trim().max(100).optional(),
         areaIds: z.array(uuid).max(50),
       })
       .parse(input),
@@ -39,17 +38,43 @@ export const createAreaAdmin = createServerFn({ method: "POST" })
   .handler(async ({ data, context }) => {
     await assertSuper(context);
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-    const { data: created, error } = await supabaseAdmin.auth.admin.createUser({
-      email: data.email,
-      password: data.password,
-      email_confirm: true,
-      user_metadata: { full_name: data.fullName },
-    });
-    if (error || !created.user) {
-      return { ok: false as const, error: error?.message ?? "Could not create the account" };
+    const site = "https://drivesafevision.com";
+
+    const { data: existing } = await supabaseAdmin
+      .from("profiles")
+      .select("id, full_name")
+      .ilike("email", data.email)
+      .maybeSingle();
+
+    let id = existing?.id;
+    let newAccount = false;
+    let actionUrl = `${site}/admin/login`;
+    const fullName = data.fullName || existing?.full_name || "";
+
+    if (!id) {
+      const { data: created, error } = await supabaseAdmin.auth.admin.createUser({
+        email: data.email,
+        email_confirm: true,
+        user_metadata: { full_name: fullName },
+      });
+      if (error || !created.user) {
+        return { ok: false as const, error: error?.message ?? "Could not create the account" };
+      }
+      id = created.user.id;
+      newAccount = true;
+      await supabaseAdmin.from("profiles").upsert({ id, full_name: fullName, email: data.email });
+      const { data: link } = await supabaseAdmin.auth.admin.generateLink({
+        type: "recovery",
+        email: data.email,
+        options: { redirectTo: `${site}/reset-password` },
+      });
+      if (link?.properties?.action_link) actionUrl = link.properties.action_link;
     }
-    const id = created.user.id;
-    await supabaseAdmin.from("profiles").upsert({ id, full_name: data.fullName, email: data.email });
+
+    const { data: already } = await supabaseAdmin
+      .from("area_admins").select("user_id").eq("user_id", id).maybeSingle();
+    if (already) return { ok: false as const, error: "That person is already an area admin" };
+
     const { error: aErr } = await supabaseAdmin
       .from("area_admins")
       .insert({ user_id: id, created_by: context.userId });
@@ -57,9 +82,27 @@ export const createAreaAdmin = createServerFn({ method: "POST" })
     if (data.areaIds.length) {
       await supabaseAdmin
         .from("area_admin_areas")
-        .insert(data.areaIds.map((area_id) => ({ admin_id: id, area_id })));
+        .insert(data.areaIds.map((area_id) => ({ admin_id: id!, area_id })));
     }
-    return { ok: true as const, id };
+
+    let areaNames = "";
+    if (data.areaIds.length) {
+      const { data: rows } = await supabaseAdmin.from("areas").select("name").in("id", data.areaIds);
+      areaNames = (rows ?? []).map((r) => r.name).join(", ");
+    }
+
+    let emailSent = false;
+    try {
+      const { sendTemplateEmail } = await import("@/lib/email-templates/send-email");
+      const r = await sendTemplateEmail("area-admin-selected", data.email, {
+        templateData: { name: fullName || undefined, areas: areaNames || undefined, actionUrl, newAccount },
+        idempotencyKey: `area-admin-selected-${id}-${Date.now()}`,
+      });
+      emailSent = r.sent;
+    } catch (e) {
+      console.error("area admin email failed", e);
+    }
+    return { ok: true as const, id, emailSent };
   });
 
 export const updateAreaAdmin = createServerFn({ method: "POST" })
@@ -128,8 +171,10 @@ export const deleteAreaAdmin = createServerFn({ method: "POST" })
       .from("reports")
       .update({ assigned_admin_id: null })
       .eq("assigned_admin_id", data.userId);
-    await supabaseAdmin.from("area_admins").delete().eq("user_id", data.userId);
-    const { error } = await supabaseAdmin.auth.admin.deleteUser(data.userId);
+    // Removes admin access only; the person keeps a normal citizen account.
+    await supabaseAdmin.from("admin_warnings").delete().eq("admin_id", data.userId);
+    await supabaseAdmin.from("area_admin_areas").delete().eq("admin_id", data.userId);
+    const { error } = await supabaseAdmin.from("area_admins").delete().eq("user_id", data.userId);
     if (error) return { ok: false as const, error: error.message };
     return { ok: true as const };
   });
