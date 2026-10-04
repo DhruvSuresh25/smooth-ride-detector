@@ -24,6 +24,7 @@ import { Route as AuthenticatedDashboardRouteImport } from './routes/_authentica
 import { Route as AuthenticatedMapRouteImport } from './routes/_authenticated/map'
 import { Route as AuthenticatedProfileRouteImport } from './routes/_authenticated/profile'
 import { Route as AdminLoginRouteImport } from './routes/admin.login'
+import { Route as ResourcesHowPotholesFormRouteImport } from './routes/resources.how-potholes-form'
 import { Route as DotlovableOauthConsentRouteImport } from './routes/[.]lovable.oauth.consent'
 import { Route as AuthenticatedAdminAnalyticsRouteImport } from './routes/_authenticated/admin.analytics'
 import { Route as AuthenticatedAdminAreaAdminsRouteImport } from './routes/_authenticated/admin.area-admins'
@@ -115,6 +116,12 @@ const AdminLoginRoute = AdminLoginRouteImport.update({
   path: '/admin/login',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ResourcesHowPotholesFormRoute =
+  ResourcesHowPotholesFormRouteImport.update({
+    id: '/resources/how-potholes-form',
+    path: '/resources/how-potholes-form',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 const DotlovableOauthConsentRoute = DotlovableOauthConsentRouteImport.update({
   id: '/.lovable/oauth/consent',
   path: '/.lovable/oauth/consent',
@@ -215,6 +222,7 @@ export interface FileRoutesByFullPath {
   '/map': typeof AuthenticatedMapRoute
   '/profile': typeof AuthenticatedProfileRoute
   '/admin/login': typeof AdminLoginRoute
+  '/resources/how-potholes-form': typeof ResourcesHowPotholesFormRoute
   '/.lovable/oauth/consent': typeof DotlovableOauthConsentRoute
   '/admin/analytics': typeof AuthenticatedAdminAnalyticsRoute
   '/admin/area-admins': typeof AuthenticatedAdminAreaAdminsRoute
@@ -246,6 +254,7 @@ export interface FileRoutesByTo {
   '/map': typeof AuthenticatedMapRoute
   '/profile': typeof AuthenticatedProfileRoute
   '/admin/login': typeof AdminLoginRoute
+  '/resources/how-potholes-form': typeof ResourcesHowPotholesFormRoute
   '/.lovable/oauth/consent': typeof DotlovableOauthConsentRoute
   '/admin/analytics': typeof AuthenticatedAdminAnalyticsRoute
   '/admin/area-admins': typeof AuthenticatedAdminAreaAdminsRoute
@@ -279,6 +288,7 @@ export interface FileRoutesById {
   '/_authenticated/map': typeof AuthenticatedMapRoute
   '/_authenticated/profile': typeof AuthenticatedProfileRoute
   '/admin/login': typeof AdminLoginRoute
+  '/resources/how-potholes-form': typeof ResourcesHowPotholesFormRoute
   '/.lovable/oauth/consent': typeof DotlovableOauthConsentRoute
   '/_authenticated/admin/analytics': typeof AuthenticatedAdminAnalyticsRoute
   '/_authenticated/admin/area-admins': typeof AuthenticatedAdminAreaAdminsRoute
@@ -312,6 +322,7 @@ export interface FileRouteTypes {
     | '/map'
     | '/profile'
     | '/admin/login'
+    | '/resources/how-potholes-form'
     | '/.lovable/oauth/consent'
     | '/admin/analytics'
     | '/admin/area-admins'
@@ -343,6 +354,7 @@ export interface FileRouteTypes {
     | '/map'
     | '/profile'
     | '/admin/login'
+    | '/resources/how-potholes-form'
     | '/.lovable/oauth/consent'
     | '/admin/analytics'
     | '/admin/area-admins'
@@ -375,6 +387,7 @@ export interface FileRouteTypes {
     | '/_authenticated/map'
     | '/_authenticated/profile'
     | '/admin/login'
+    | '/resources/how-potholes-form'
     | '/.lovable/oauth/consent'
     | '/_authenticated/admin/analytics'
     | '/_authenticated/admin/area-admins'
@@ -404,6 +417,7 @@ export interface RootRouteChildren {
   SitemapDotxmlRoute: typeof SitemapDotxmlRoute
   Char91DotwellKnownChar93OauthProtectedResourceRoute: typeof Char91DotwellKnownChar93OauthProtectedResourceRoute
   AdminLoginRoute: typeof AdminLoginRoute
+  ResourcesHowPotholesFormRoute: typeof ResourcesHowPotholesFormRoute
   DotlovableOauthConsentRoute: typeof DotlovableOauthConsentRoute
   LovableEmailAuthPreviewRoute: typeof LovableEmailAuthPreviewRoute
   LovableEmailAuthWebhookRoute: typeof LovableEmailAuthWebhookRoute
@@ -515,6 +529,13 @@ declare module '@tanstack/react-router' {
       path: '/admin/login'
       fullPath: '/admin/login'
       preLoaderRoute: typeof AdminLoginRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/resources/how-potholes-form': {
+      id: '/resources/how-potholes-form'
+      path: '/resources/how-potholes-form'
+      fullPath: '/resources/how-potholes-form'
+      preLoaderRoute: typeof ResourcesHowPotholesFormRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/.lovable/oauth/consent': {
@@ -677,6 +698,7 @@ const rootRouteChildren: RootRouteChildren = {
   Char91DotwellKnownChar93OauthProtectedResourceRoute:
     Char91DotwellKnownChar93OauthProtectedResourceRoute,
   AdminLoginRoute: AdminLoginRoute,
+  ResourcesHowPotholesFormRoute: ResourcesHowPotholesFormRoute,
   DotlovableOauthConsentRoute: DotlovableOauthConsentRoute,
   LovableEmailAuthPreviewRoute: LovableEmailAuthPreviewRoute,
   LovableEmailAuthWebhookRoute: LovableEmailAuthWebhookRoute,
