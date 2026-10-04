@@ -435,6 +435,33 @@ export type Database = {
           },
         ]
       }
+      super_admin_invites: {
+        Row: {
+          accepted_at: string | null
+          created_at: string
+          declined_at: string | null
+          email: string
+          id: string
+          invited_by: string | null
+        }
+        Insert: {
+          accepted_at?: string | null
+          created_at?: string
+          declined_at?: string | null
+          email: string
+          id?: string
+          invited_by?: string | null
+        }
+        Update: {
+          accepted_at?: string | null
+          created_at?: string
+          declined_at?: string | null
+          email?: string
+          id?: string
+          invited_by?: string | null
+        }
+        Relationships: []
+      }
       user_roles: {
         Row: {
           created_at: string
@@ -510,6 +537,10 @@ export type Database = {
       }
       rate_report: {
         Args: { _rating: number; _report_id: string }
+        Returns: undefined
+      }
+      respond_super_admin_invite: {
+        Args: { _accept: boolean; _id: string }
         Returns: undefined
       }
       submit_feedback: {
