@@ -99,7 +99,7 @@ function AreaAdminsPage() {
       subtitle="Create area admins, assign areas and track performance"
       actions={
         <Button size="sm" onClick={() => setCreating(true)} disabled={!areas?.length}>
-          <Plus className="size-4" aria-hidden="true" /> New area admin
+          <Plus className="size-4" aria-hidden="true" /> Add admin by email
         </Button>
       }
     >
@@ -221,7 +221,7 @@ function AdminCard({
       return;
     const res = await del({ data: { userId: admin.user_id } });
     if (!res.ok) return void toast.error("Could not delete", { description: res.error });
-    toast.success("Area admin deleted");
+    toast.success("Admin removed");
     refresh();
   }
 
@@ -260,7 +260,7 @@ function AdminCard({
           {suspended ? "Reactivate" : "Suspend"}
         </Button>
         <Button size="sm" variant="destructive" onClick={remove} disabled={admin.user_id === user?.id}>
-          Delete
+          Remove admin
         </Button>
       </div>
       {editing && <AdminFormDialog areas={areas} admin={admin} onClose={() => setEditing(false)} />}
