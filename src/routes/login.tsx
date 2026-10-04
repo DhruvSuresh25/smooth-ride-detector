@@ -175,13 +175,14 @@ function LoginPage() {
 
       <SignInAssistant issue={authIssue} />
 
-      <p className="text-sm text-muted-foreground">
-        Road maintenance staff can{" "}
-        <Link to="/admin/login" className="font-medium text-primary hover:underline">
-          sign in to the admin portal
-        </Link>
-        .
-      </p>
+      <div className="grid gap-2 sm:grid-cols-2">
+        <Button asChild variant="outline">
+          <Link to="/admin/login">Super admin sign in</Link>
+        </Button>
+        <Button asChild variant="outline">
+          <Link to="/admin/login">Area admin sign in</Link>
+        </Button>
+      </div>
     </AuthLayout>
   );
 }

@@ -237,7 +237,7 @@ function Landing() {
             <a href="#how-it-works" className="hover:text-foreground">Privacy</a>
             <a href="#how-it-works" className="hover:text-foreground">Terms</a>
             <a href="#impact" className="hover:text-foreground">Contact</a>
-            <Link to="/admin/login" className="hover:text-foreground">Admin</Link>
+            <Link to="/admin/login" className="hover:text-foreground">Super admin / Admin sign in</Link>
           </nav>
         </div>
         <p className="border-t border-border px-5 py-4 text-center text-xs text-muted-foreground">
