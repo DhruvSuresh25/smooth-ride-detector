@@ -295,7 +295,6 @@ function AdminFormDialog({
   const update = useServerFn(updateAreaAdmin);
   const [fullName, setFullName] = useState(admin?.full_name ?? "");
   const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
   const [areaIds, setAreaIds] = useState<string[]>(admin?.areaIds ?? []);
   const [busy, setBusy] = useState(false);
 
@@ -303,13 +302,11 @@ function AdminFormDialog({
     if (admin && !fullName.trim()) return void toast.error("Name is required");
     if (!admin && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim()))
       return void toast.error("Enter a valid email address");
-    if (!admin && password && password.length < 8)
-      return void toast.error("Password must be at least 8 characters");
     setBusy(true);
     try {
       const res = admin
         ? await update({ data: { userId: admin.user_id, fullName, areaIds } })
-        : await create({ data: { email: email.trim(), fullName, areaIds, password: password || undefined } });
+        : await create({ data: { email: email.trim(), fullName, areaIds } });
       if (!res.ok) return void toast.error("Could not save", { description: res.error });
       toast.success(admin ? "Area admin updated" : "Area admin added", {
         description: admin
@@ -344,21 +341,9 @@ function AdminFormDialog({
                 <Label htmlFor="aa-email">Email</Label>
                 <Input id="aa-email" type="email" value={email} onChange={(e) => setEmail(e.target.value)} />
               </div>
-              <div className="space-y-1.5">
-                <Label htmlFor="aa-password">Password (optional)</Label>
-                <Input
-                  id="aa-password"
-                  type="password"
-                  autoComplete="new-password"
-                  placeholder="At least 8 characters"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                />
-              </div>
               <p className="text-xs text-muted-foreground">
-                We'll email them that they've been selected as an admin of DriveSafe Vision. If you
-                set a password, share it with them yourself — they can sign in right away. If you
-                leave it empty, they get a link to set their own password.
+                We'll email them that they've been selected as an admin of DriveSafe Vision, with a
+                button to set their own password and sign in to the admin portal.
               </p>
             </>
           )}

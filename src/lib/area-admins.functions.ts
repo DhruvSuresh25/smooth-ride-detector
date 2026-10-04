@@ -31,7 +31,6 @@ export const createAreaAdmin = createServerFn({ method: "POST" })
       .object({
         email: z.string().trim().toLowerCase().email().max(255),
         fullName: z.string().trim().max(100).optional(),
-        password: z.string().min(8).max(72).optional(),
         areaIds: z.array(uuid).max(50),
       })
       .parse(input),
@@ -56,7 +55,6 @@ export const createAreaAdmin = createServerFn({ method: "POST" })
       const { data: created, error } = await supabaseAdmin.auth.admin.createUser({
         email: data.email,
         email_confirm: true,
-        ...(data.password ? { password: data.password } : {}),
         user_metadata: { full_name: fullName },
       });
       if (error || !created.user) {
@@ -65,17 +63,15 @@ export const createAreaAdmin = createServerFn({ method: "POST" })
       id = created.user.id;
       newAccount = true;
       await supabaseAdmin.from("profiles").upsert({ id, full_name: fullName, email: data.email });
-      if (!data.password) {
-        const { data: link } = await supabaseAdmin.auth.admin.generateLink({
-          type: "recovery",
-          email: data.email,
-          options: { redirectTo: `${site}/reset-password` },
-        });
-        if (link?.properties?.action_link) actionUrl = link.properties.action_link;
-      }
-    } else if (data.password) {
-      const { error } = await supabaseAdmin.auth.admin.updateUserById(id, { password: data.password });
-      if (error) return { ok: false as const, error: error.message };
+    }
+    // Everyone gets a link in the email to set their own password for the admin portal.
+    {
+      const { data: link } = await supabaseAdmin.auth.admin.generateLink({
+        type: "recovery",
+        email: data.email,
+        options: { redirectTo: `${site}/reset-password` },
+      });
+      if (link?.properties?.action_link) actionUrl = link.properties.action_link;
     }
 
     const { data: already } = await supabaseAdmin
@@ -102,7 +98,7 @@ export const createAreaAdmin = createServerFn({ method: "POST" })
     try {
       const { sendTemplateEmail } = await import("@/lib/email-templates/send-email");
       const r = await sendTemplateEmail("area-admin-selected", data.email, {
-        templateData: { name: fullName || undefined, areas: areaNames || undefined, actionUrl, newAccount: newAccount && !data.password },
+        templateData: { name: fullName || undefined, areas: areaNames || undefined, actionUrl, newAccount: true },
         idempotencyKey: `area-admin-selected-${id}-${Date.now()}`,
       });
       emailSent = r.sent;
