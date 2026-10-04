@@ -30,7 +30,7 @@ export function AuthLayout({
           </p>
         </div>
         <p className="text-xs text-primary-foreground/70">
-          Reports are reviewed by road-maintenance administrators.
+          Reports are reviewed by road-maintenance administrators. · Developed by Dhruvva Suresh
         </p>
       </div>
 
