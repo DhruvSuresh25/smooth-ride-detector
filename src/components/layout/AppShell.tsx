@@ -20,6 +20,8 @@ import { useProfile, useSignOut } from "@/hooks/useAuth";
 import { useSignedUrl } from "@/components/StorageImage";
 import { initialsOf } from "@/lib/constants";
 import { cn } from "@/lib/utils";
+import { useStaffRole } from "@/lib/staff";
+import { SuperAdminInviteBanner } from "@/components/admin/SuperAdminInvites";
 
 export type NavItem = {
   to: string;
@@ -75,6 +77,8 @@ export function AppShell({
   const { data: profile } = useProfile();
   const signOut = useSignOut();
   const { data: avatarUrl } = useSignedUrl(profile?.avatar_url);
+  const { data: staff } = useStaffRole();
+  const isStaff = !!staff && (staff.isSuper || staff.isAreaAdmin);
 
   const sidebar = (
     <div className="flex h-full flex-col gap-6 p-4">
@@ -155,7 +159,7 @@ export function AppShell({
                   </DropdownMenuLabel>
                   <DropdownMenuSeparator />
                   <DropdownMenuItem asChild>
-                    <Link to="/dashboard" className="gap-2">
+                    <Link to={isStaff ? "/admin/dashboard" : "/dashboard"} className="gap-2">
                       <UserRound className="size-4" /> My dashboard
                     </Link>
                   </DropdownMenuItem>
@@ -173,6 +177,7 @@ export function AppShell({
             </div>
           </header>
 
+          <SuperAdminInviteBanner />
           {actions && <div className="px-4 pt-4 sm:hidden">{actions}</div>}
 
           <main className="px-4 py-6 pb-24 sm:px-6 lg:pb-10">{children}</main>
