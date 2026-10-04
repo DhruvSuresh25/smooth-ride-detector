@@ -217,7 +217,7 @@ function AdminCard({
   }
 
   async function remove() {
-    if (!confirm(`Delete ${admin.full_name || admin.email}? Their complaints stay and become unassigned.`))
+    if (!confirm(`Remove ${admin.full_name || admin.email} as an admin? Their account stays as a normal citizen account, and their complaints become unassigned.`))
       return;
     const res = await del({ data: { userId: admin.user_id } });
     if (!res.ok) return void toast.error("Could not delete", { description: res.error });

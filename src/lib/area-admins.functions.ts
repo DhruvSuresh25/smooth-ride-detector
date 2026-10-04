@@ -171,8 +171,10 @@ export const deleteAreaAdmin = createServerFn({ method: "POST" })
       .from("reports")
       .update({ assigned_admin_id: null })
       .eq("assigned_admin_id", data.userId);
-    await supabaseAdmin.from("area_admins").delete().eq("user_id", data.userId);
-    const { error } = await supabaseAdmin.auth.admin.deleteUser(data.userId);
+    // Removes admin access only; the person keeps a normal citizen account.
+    await supabaseAdmin.from("admin_warnings").delete().eq("admin_id", data.userId);
+    await supabaseAdmin.from("area_admin_areas").delete().eq("admin_id", data.userId);
+    const { error } = await supabaseAdmin.from("area_admins").delete().eq("user_id", data.userId);
     if (error) return { ok: false as const, error: error.message };
     return { ok: true as const };
   });
