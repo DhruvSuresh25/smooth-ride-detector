@@ -45,12 +45,36 @@ const areaNav: NavItem[] = [
   { to: "/admin/map", label: "Map", icon: MapIcon },
 ];
 
-export function UserShell(props: {
+export function UserShell({
+  allowStaff = false,
+  ...props
+}: {
   title: string;
   subtitle?: string | undefined;
   actions?: ReactNode | undefined;
   children: ReactNode;
+  allowStaff?: boolean;
 }) {
+  const { data: role, isLoading } = useStaffRole();
+  const navigate = useNavigate();
+  const isStaff = !!role && (role.isSuper || role.isAreaAdmin);
+  const blocked = !allowStaff && isStaff;
+
+  useEffect(() => {
+    if (blocked) {
+      toast.info("Admins use the admin portal", { description: "Citizen pages aren't available to admin accounts." });
+      navigate({ to: "/admin/dashboard", replace: true });
+    }
+  }, [blocked, navigate]);
+
+  if (isLoading || blocked) {
+    return (
+      <div className="grid min-h-screen place-items-center text-muted-foreground">
+        <Loader2 className="size-6 animate-spin text-primary" aria-hidden="true" />
+      </div>
+    );
+  }
+  if (isStaff) return <AppShell navItems={role.isSuper ? superNav : areaNav} {...props} />;
   return <AppShell navItems={userNav} {...props} />;
 }
 

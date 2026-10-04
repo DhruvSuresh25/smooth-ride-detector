@@ -5,6 +5,7 @@ import { useEffect, useState } from "react";
 import { toast } from "sonner";
 
 import { DeadlineRules, ThresholdSetting } from "@/components/admin/SettingsExtras";
+import { SuperAdminInvites } from "@/components/admin/SuperAdminInvites";
 import { AdminShell } from "@/components/layout/Shells";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -89,6 +90,7 @@ export const Route = createFileRoute("/_authenticated/admin/settings")({
 function AdminSettingsPage() {
   return (
     <AdminShell superOnly title="Settings" subtitle="How this deployment is configured">
+      <div className="mb-5"><SuperAdminInvites /></div>
       <div className="grid gap-5 lg:grid-cols-2">
         <section className="surface-card p-5">
           <h2 className="flex items-center gap-2 font-bold">

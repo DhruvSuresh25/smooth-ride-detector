@@ -150,7 +150,7 @@ function ProfilePage() {
   }
 
   return (
-    <UserShell title="Profile & Settings" subtitle="Your account details and preferences">
+    <UserShell allowStaff title="Profile & Settings" subtitle="Your account details and preferences">
       <div className="grid gap-5 lg:grid-cols-2">
         <section className="surface-card p-5">
           <h2 className="font-bold">Profile</h2>

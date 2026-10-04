@@ -78,6 +78,15 @@ function LoginPage() {
         return;
       }
 
+      const [{ data: isSuper }, { data: isArea }] = await Promise.all([
+        supabase.rpc("has_role", { _user_id: data.user.id, _role: "admin" }),
+        supabase.rpc("is_area_admin", { _user_id: data.user.id }),
+      ]);
+      if (isSuper || isArea) {
+        toast.success("Welcome back", { description: "Admin accounts open the admin portal." });
+        navigate({ to: "/admin/dashboard", replace: true });
+        return;
+      }
       toast.success("Welcome back");
       await goNext();
     } catch (error) {
