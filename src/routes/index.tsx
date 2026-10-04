@@ -234,6 +234,7 @@ function Landing() {
           </div>
           <nav className="flex flex-wrap gap-x-6 gap-y-2 text-sm text-muted-foreground">
             <a href="#features" className="hover:text-foreground">About</a>
+            <Link to="/resources/how-potholes-form" className="hover:text-foreground">How potholes form</Link>
             <a href="#how-it-works" className="hover:text-foreground">Privacy</a>
             <a href="#how-it-works" className="hover:text-foreground">Terms</a>
             <a href="#impact" className="hover:text-foreground">Contact</a>
