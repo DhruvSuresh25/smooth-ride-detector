@@ -71,6 +71,13 @@
       "when": 1791129239378,
       "tag": "0009_remove_old_super_admin",
       "breakpoints": true
+    },
+    {
+      "idx": 10,
+      "version": "7",
+      "when": 1791130116870,
+      "tag": "0010_cleanup_orphan_profiles",
+      "breakpoints": true
     }
   ]
 }
