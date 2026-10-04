@@ -44,8 +44,20 @@ export const deleteUserAccount = createServerFn({ method: "POST" })
       throw new Error("You cannot delete your own administrator account");
     }
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-    await supabaseAdmin.from("reports").delete().eq("user_id", data.userId);
-    const { error } = await supabaseAdmin.auth.admin.deleteUser(data.userId);
-    if (error) throw new Error(error.message);
+    const id = data.userId;
+    await supabaseAdmin.from("reports").update({ assigned_admin_id: null }).eq("assigned_admin_id", id);
+    const steps = [
+      supabaseAdmin.from("reports").delete().eq("user_id", id),
+      supabaseAdmin.from("notifications").delete().eq("user_id", id),
+      supabaseAdmin.from("area_admins").delete().eq("user_id", id),
+      supabaseAdmin.from("user_roles").delete().eq("user_id", id),
+      supabaseAdmin.from("profiles").delete().eq("id", id),
+    ];
+    for (const step of steps) {
+      const { error } = await step;
+      if (error) throw new Error(error.message);
+    }
+    const { error } = await supabaseAdmin.auth.admin.deleteUser(id);
+    if (error && !/not found/i.test(error.message)) throw new Error(error.message);
     return { ok: true };
   });
