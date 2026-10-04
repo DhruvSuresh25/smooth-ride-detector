@@ -42,8 +42,8 @@ export function SuperAdminInvites() {
 
   async function invite() {
     const e = email.trim().toLowerCase();
-    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(e)) return toast.error("Enter a valid email address");
-    if (supers.some((s) => s.email.toLowerCase() === e)) return toast.error("That person is already a super admin");
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(e)) { toast.error("Enter a valid email address"); return; }
+    if (supers.some((s) => s.email.toLowerCase() === e)) { toast.error("That person is already a super admin"); return; }
     setSaving(true);
     const { error } = await supabase.from("super_admin_invites").insert({ email: e, invited_by: user!.id });
     setSaving(false);
@@ -58,7 +58,7 @@ export function SuperAdminInvites() {
 
   async function cancel(id: string) {
     const { error } = await supabase.from("super_admin_invites").delete().eq("id", id);
-    if (error) return toast.error(error.message);
+    if (error) { toast.error(error.message); return; }
     void qc.invalidateQueries({ queryKey: ["super-admin-invites"] });
   }
 
@@ -142,7 +142,7 @@ export function SuperAdminInviteBanner() {
     setBusy(true);
     const { error } = await supabase.rpc("respond_super_admin_invite", { _id: invite!.id, _accept: accept });
     setBusy(false);
-    if (error) return toast.error(error.message);
+    if (error) { toast.error(error.message); return; }
     toast.success(accept ? "You are now a super admin" : "Invitation declined");
     await qc.invalidateQueries();
     if (accept) window.location.assign("/admin/dashboard");
