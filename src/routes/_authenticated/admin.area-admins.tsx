@@ -98,7 +98,7 @@ function AreaAdminsPage() {
       title="Area admins"
       subtitle="Create area admins, assign areas and track performance"
       actions={
-        <Button size="sm" onClick={() => setCreating(true)} disabled={!areas?.length}>
+        <Button size="sm" onClick={() => (areas?.length ? setCreating(true) : toast.error("Add an area first", { description: "Type an area name in the Areas box on the left and press Add, then add the admin." }))}>
           <Plus className="size-4" aria-hidden="true" /> Add admin by email
         </Button>
       }

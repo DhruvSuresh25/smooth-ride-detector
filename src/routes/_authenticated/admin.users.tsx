@@ -133,7 +133,7 @@ function AdminUsersPage() {
             <SelectContent>
               <SelectItem value="all">All roles</SelectItem>
               <SelectItem value="user">Citizens</SelectItem>
-              <SelectItem value="admin">Administrators</SelectItem>
+              <SelectItem value="admin">Super admins</SelectItem>
             </SelectContent>
           </Select>
         </div>
@@ -171,7 +171,7 @@ function AdminUsersPage() {
                     <TableCell>
                       {u.role === "admin" ? (
                         <Badge className="gap-1 bg-primary-soft text-primary hover:bg-primary-soft">
-                          <ShieldCheck className="size-3" aria-hidden="true" /> Admin
+                          <ShieldCheck className="size-3" aria-hidden="true" /> Super admin
                         </Badge>
                       ) : (
                         <Badge variant="secondary" className="gap-1">
@@ -228,7 +228,7 @@ function AdminUsersPage() {
                     <p className="text-xs text-muted-foreground">{u.email}</p>
                   </div>
                   <Badge variant={u.role === "admin" ? "default" : "secondary"}>
-                    {u.role === "admin" ? "Admin" : "Citizen"}
+                    {u.role === "admin" ? "Super admin" : "Citizen"}
                   </Badge>
                 </div>
                 <p className="mt-2 text-xs text-muted-foreground">
