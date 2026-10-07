@@ -85,6 +85,7 @@ export function SeverityChart({ reports }: { reports: Report[] }) {
     );
   }
 
+  const total = data.reduce((s, d) => s + d.value, 0);
   return (
     <ChartCard title="Severity breakdown" description="Share of reports per severity level">
       <PieChart>
@@ -95,6 +96,14 @@ export function SeverityChart({ reports }: { reports: Report[] }) {
         </Pie>
         <Tooltip contentStyle={tooltipStyle} />
       </PieChart>
+      <ul className="mt-3 flex flex-wrap justify-center gap-x-4 gap-y-1 text-xs">
+        {data.map((entry) => (
+          <li key={entry.name} className="inline-flex items-center gap-1.5">
+            <span className="size-2.5 rounded-full" style={{ background: SEVERITY_COLORS[entry.name] }} aria-hidden="true" />
+            {entry.name}: {entry.value} ({Math.round((entry.value / total) * 100)}%)
+          </li>
+        ))}
+      </ul>
     </ChartCard>
   );
 }
