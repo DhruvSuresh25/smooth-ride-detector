@@ -138,19 +138,28 @@ export type Database = {
       }
       areas: {
         Row: {
+          center_lat: number | null
+          center_lng: number | null
           created_at: string
           id: string
           name: string
+          radius_km: number
         }
         Insert: {
+          center_lat?: number | null
+          center_lng?: number | null
           created_at?: string
           id?: string
           name: string
+          radius_km?: number
         }
         Update: {
+          center_lat?: number | null
+          center_lng?: number | null
           created_at?: string
           id?: string
           name?: string
+          radius_km?: number
         }
         Relationships: []
       }
@@ -508,6 +517,11 @@ export type Database = {
           total: number
         }[]
       }
+      area_for_point: { Args: { _lat: number; _lng: number }; Returns: string }
+      area_for_point_within: {
+        Args: { _lat: number; _lng: number }
+        Returns: string
+      }
       can_manage_report: {
         Args: { _area_id: string; _assigned: string; _user_id: string }
         Returns: boolean
@@ -524,6 +538,10 @@ export type Database = {
         Returns: boolean
       }
       is_area_admin: { Args: { _user_id: string }; Returns: boolean }
+      log_audit: {
+        Args: { _action: string; _actor: string; _details: Json }
+        Returns: undefined
+      }
       public_area_stats: {
         Args: never
         Returns: {
