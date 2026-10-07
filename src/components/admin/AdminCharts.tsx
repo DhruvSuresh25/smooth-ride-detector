@@ -26,10 +26,12 @@ const SEVERITY_COLORS: Record<string, string> = {
 function ChartCard({
   title,
   description,
+  footer,
   children,
 }: {
   title: string;
   description: string;
+  footer?: React.ReactNode;
   children: React.ReactNode;
 }) {
   return (
@@ -41,6 +43,7 @@ function ChartCard({
           {children as never}
         </ResponsiveContainer>
       </div>
+      {footer}
     </section>
   );
 }
@@ -85,8 +88,22 @@ export function SeverityChart({ reports }: { reports: Report[] }) {
     );
   }
 
+  const total = data.reduce((s, d) => s + d.value, 0);
   return (
-    <ChartCard title="Severity breakdown" description="Share of reports per severity level">
+    <ChartCard
+      title="Severity breakdown"
+      description="Share of reports per severity level"
+      footer={
+        <ul className="mt-3 flex flex-wrap justify-center gap-x-4 gap-y-1 text-xs">
+          {data.map((entry) => (
+            <li key={entry.name} className="inline-flex items-center gap-1.5">
+              <span className="size-2.5 rounded-full" style={{ background: SEVERITY_COLORS[entry.name] }} aria-hidden="true" />
+              {entry.name}: {entry.value} ({Math.round((entry.value / total) * 100)}%)
+            </li>
+          ))}
+        </ul>
+      }
+    >
       <PieChart>
         <Pie data={data} dataKey="value" nameKey="name" innerRadius={55} outerRadius={90} paddingAngle={2}>
           {data.map((entry) => (

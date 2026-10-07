@@ -117,8 +117,7 @@ function AdminSettingsPage() {
           </div>
           <p className="mt-4 flex items-start gap-2 rounded-lg bg-muted/60 p-3 text-xs text-muted-foreground">
             <Info className="mt-0.5 size-3.5 shrink-0" aria-hidden="true" />
-            {ANALYSIS_DISCLAIMER} Connect a real detection service by replacing the request inside
-            the analysis service file — see the project README for the exact steps.
+            {ANALYSIS_DISCLAIMER}
           </p>
         </section>
 
@@ -132,9 +131,8 @@ function AdminSettingsPage() {
             <Row label="Report visibility" value="Citizens see their own; admins see all" />
           </div>
           <p className="mt-4 rounded-lg bg-muted/60 p-3 text-xs text-muted-foreground">
-            Administrator access is never granted through the interface and there are no built-in
-            admin credentials. A new administrator is promoted by adding an admin role row for their
-            account, as documented in the README.
+            There are no built-in admin credentials. Super admins are invited by email above, and
+            area admins are added from the Area Admins page — both set their own password.
           </p>
         </section>
 

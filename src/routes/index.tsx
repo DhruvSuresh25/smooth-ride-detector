@@ -235,9 +235,9 @@ function Landing() {
           <nav className="flex flex-wrap gap-x-6 gap-y-2 text-sm text-muted-foreground">
             <a href="#features" className="hover:text-foreground">About</a>
             <Link to="/resources/how-potholes-form" className="hover:text-foreground">How potholes form</Link>
-            <a href="#how-it-works" className="hover:text-foreground">Privacy</a>
-            <a href="#how-it-works" className="hover:text-foreground">Terms</a>
-            <a href="#impact" className="hover:text-foreground">Contact</a>
+            <Link to="/privacy" className="hover:text-foreground">Privacy</Link>
+            <Link to="/terms" className="hover:text-foreground">Terms</Link>
+            <Link to="/contact" className="hover:text-foreground">Contact</Link>
             <Link to="/admin/login" className="hover:text-foreground">Super admin / Admin sign in</Link>
           </nav>
         </div>

@@ -1,41 +1,31 @@
-# Roadmap
+# DriveSafe Vision — QA report fixes (45 findings)
 
-- [x] Resume the Lovable Cloud backend.
-- [x] Audit and fix citizen registration, sign-in, and protected-page navigation.
-- [x] Add clear authentication error guidance and recovery actions.
-- [x] Add and verify AI-powered sign-in troubleshooting through AI Gateway.
-- [x] Validate valid-account sign-in with an available test account.
-- [x] Area-admin gaps from project description: in-app notifications, overdue alerts, feedback, deadline rules, thresholds, analytics, Duplicate, time left, maps, public area stats, audit log, repair photo.
+## Done
+- [x] GPS-based area routing (areas now have center + radius; new GPS reports auto-route; existing GPS reports backfilled)
+- [x] Unassigned-area reports notify super admins in-app
+- [x] IST timestamps everywhere; minute-level overdue labels
+- [x] Status timeline shows real history incl. Reopened (RPT-0002 contradiction explained)
+- [x] Notifications: no auto mark-read on close; per-item read + mark all
+- [x] Maps show clear empty-state messages
+- [x] New report form auto-selects area from GPS/map pin
+- [x] Report detail pages: loading skeletons, area label, mini-map, clearer no-access message
+- [x] Admin reports list: URL-backed filters, workflow sort, area/unassigned filter, role-aware counts
+- [x] Self-suspend/self-delete blocked (server + UI)
+- [x] Audit log: actor recorded for admin actions, per-field status/area/admin/deadline entries
+- [x] Area admin creation requires a name; removal confirmed via dialog
+- [x] Admin login page: invitation/password-setup explanation (no developer README text)
+- [x] Settings: role-policy copy fixed, README reference removed
+- [x] Users page: super admin labeled, area admins shown with role, self-actions guarded
+- [x] Citizen reports list: workflow status sort, inclusive date filter, "Showing X of Y"
+- [x] Area stats page uses the signed-in layout when logged in
+- [x] Analytics: period filter (7/30/90 days/all) + severity chart legend with counts
+- [x] Real Privacy, Terms and Contact pages; footer links point to them
+- [x] Profile: role badge, admin areas + on-time rate/rating, staff-aware stats
+- [x] 404 page title fixed; password placeholder clarified
+- [x] Typecheck clean
 
-## QA report fixes (6 Oct 2026)
-
-- [ ] #1/#2 GPS → area auto-detect (area center + radius), full dropdown, backfill, unassigned queue + super admin alert
-- [ ] #3/#30/#39 IST display everywhere, inclusive date filter, minutes-level overdue labels
-- [ ] #4 Timeline built from history only + reopen handling
-- [ ] #5 Verify RPT-0006 images render (paths/files exist; likely stale live deploy)
-- [ ] #6/#17 Admin maps: empty state, verify pins, centre on area
-- [ ] #11 Mini map on report detail pages
-- [ ] #7 "Awaiting review" → clear label
-- [ ] #8 Role labels (Area admin) + required names
-- [ ] #9 Block self-suspend/self-delete (UI + server)
-- [ ] #10/#41 Audit log: real actor, correct action names, filters
-- [ ] #12 Analytics date filter + chart legends
-- [ ] #13 Area Stats signed-in layout
-- [ ] #15/#21 Remove developer/README text from admin pages
-- [ ] #16 Area name on area-admin pages
-- [ ] #19/#20 Brand name + password placeholders
-- [ ] #22 Real Privacy / Terms / Contact pages
-- [ ] #23 404 page title
-- [ ] #26 Navigation progress indicator
-- [ ] #27 Stray "0" hunt
-- [ ] #28/#29/#45 Workflow-order status sort, filters in URL, "Showing X of Y"
-- [ ] #31/#32/#44 Notification bell: per-item read, mark-all button
-- [ ] #33/#34 Clear "no access" messages
-- [ ] #35 "Unassigned" placeholder + Title Case area names
-- [ ] #36 Style repair-photo file input
-- [ ] #37 Remove-admin danger zone
-- [ ] #38 Role-aware profile page
-- [ ] #40 Success toasts on every save
-- [ ] #42 Loading skeletons
-- [ ] #43 Citizen report page shows assigned area
-- [ ] Browser-verify key flows, then tell user to publish
+## Not fixed / out of scope
+- RPT-0006 blank photos: storage files exist and code handles them — believed stale live build; re-check after next publish
+- "0" flash (#27): no source found in code; likely transient render artifact, monitor
+- RPT-0009 test data left in place (user asked not to delete data)
+- Publishing: not done (user must publish for live site to get these fixes)

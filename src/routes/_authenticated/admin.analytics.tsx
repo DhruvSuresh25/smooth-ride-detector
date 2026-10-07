@@ -1,5 +1,9 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { Loader2 } from "lucide-react";
+import { useMemo, useState } from "react";
+
+import { Label } from "@/components/ui/label";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 import {
   LocationChart,
@@ -32,7 +36,15 @@ export const Route = createFileRoute("/_authenticated/admin/analytics")({
 function AdminAnalyticsPage() {
   const { data: reports, isLoading } = useAllReports();
   const { data: users } = useAllUsers();
-  const all = reports ?? [];
+  const [range, setRange] = useState("all");
+  const all = useMemo(() => {
+    const list = reports ?? [];
+    if (range === "all") return list;
+    const start = new Date();
+    start.setHours(0, 0, 0, 0);
+    const cutoff = start.getTime() - (Number(range) - 1) * 86400000;
+    return list.filter((r) => new Date(r.created_at).getTime() >= cutoff);
+  }, [reports, range]);
   const avgDays = averageResolutionDays(all);
   const resolutionRate = all.length
     ? Math.round((countByStatus(all, "Fixed") / all.length) * 100)
@@ -52,6 +64,20 @@ function AdminAnalyticsPage() {
 
   return (
     <AdminShell superOnly title="Analytics" subtitle="Patterns across every submitted report">
+      <div className="mb-4 flex items-center gap-2">
+        <Label htmlFor="analytics-range" className="text-sm">Period</Label>
+        <Select value={range} onValueChange={setRange}>
+          <SelectTrigger id="analytics-range" className="w-40">
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">All time</SelectItem>
+            <SelectItem value="7">Last 7 days</SelectItem>
+            <SelectItem value="30">Last 30 days</SelectItem>
+            <SelectItem value="90">Last 90 days</SelectItem>
+          </SelectContent>
+        </Select>
+      </div>
       <section className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4" aria-label="Summary metrics">
         <StatCard label="Reports analysed" value={all.length} tone="primary" />
         <StatCard label="Potholes detected" value={totalPotholes} tone="high" />

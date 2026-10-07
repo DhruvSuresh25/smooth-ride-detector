@@ -16,7 +16,8 @@ import { StatCard } from "@/components/reports/StatCard";
 import { Button } from "@/components/ui/button";
 import { averageResolutionDays, countByStatus, useAllReports, useAllUsers } from "@/lib/reports";
 import { useAuth } from "@/hooks/useAuth";
-import { formatRate, formatRating, useMyWarnings, usePerformance, useStaffRole } from "@/lib/staff";
+import { formatDate } from "@/lib/constants";
+import { formatRate, formatRating, useMyAreas, useMyWarnings, usePerformance, useStaffRole } from "@/lib/staff";
 
 export const Route = createFileRoute("/_authenticated/admin/dashboard")({
   staticData: { sitemap: false },
@@ -62,7 +63,7 @@ function MyPerformance() {
             <p key={w.id} className="rounded-lg bg-sev-critical-bg p-3 text-sm">
               {w.message}
               <span className="ml-2 text-xs text-muted-foreground">
-                {new Date(w.created_at).toLocaleDateString()}
+                {formatDate(w.created_at)}
               </span>
             </p>
           ))}
@@ -75,11 +76,24 @@ function MyPerformance() {
 function AdminDashboardPage() {
   const { data: reports, isLoading } = useAllReports();
   const { data: users } = useAllUsers();
+  const { data: role } = useStaffRole();
+  const { data: myAreas } = useMyAreas();
   const all = reports ?? [];
   const avgDays = averageResolutionDays(all);
+  const areaAdmin = !!role?.isAreaAdmin && !role?.isSuper;
+  const areaNames = (myAreas ?? []).map((a) => a.name).join(", ");
 
   return (
-    <AdminShell title="Overview" subtitle="All reports across DriveSafe Vision">
+    <AdminShell
+      title="Overview"
+      subtitle={
+        areaAdmin
+          ? areaNames
+            ? `Reports in ${areaNames}`
+            : "Reports in your assigned areas"
+          : "All reports across DriveSafe Vision"
+      }
+    >
       <MyPerformance />
       {isLoading ? (
         <div className="surface-card grid place-items-center gap-2 p-12 text-sm text-muted-foreground">
@@ -91,10 +105,11 @@ function AdminDashboardPage() {
           <section aria-label="Key metrics" className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
             <StatCard label="Total reports" value={all.length} icon={FileStack} tone="primary" />
             <StatCard
-              label="Awaiting review"
+              label="New (Submitted)"
               value={countByStatus(all, "Submitted")}
               icon={Clock}
               tone="medium"
+              hint="Not yet marked Received"
             />
             <StatCard
               label="Fixed"

@@ -139,6 +139,7 @@ function AreasCard({ areas }: { areas: Area[] }) {
     setBusy(false);
     if (error) return void toast.error("Could not add area", { description: error.message });
     setName("");
+    toast.success("Area added", { description: `${n} is now available for routing complaints.` });
     void qc.invalidateQueries({ queryKey: ["areas"] });
   }
 
@@ -147,6 +148,7 @@ function AreasCard({ areas }: { areas: Area[] }) {
       return;
     const { error } = await supabase.from("areas").delete().eq("id", a.id);
     if (error) return void toast.error("Could not delete area", { description: error.message });
+    toast.success("Area deleted");
     void qc.invalidateQueries({ queryKey: ["areas"] });
     void qc.invalidateQueries({ queryKey: ["area-admins"] });
   }
@@ -259,9 +261,14 @@ function AdminCard({
         <Button size="sm" variant="outline" onClick={toggleSuspend}>
           {suspended ? "Reactivate" : "Suspend"}
         </Button>
+      </div>
+      <div className="mt-3 border-t border-destructive/20 pt-3">
         <Button size="sm" variant="destructive" onClick={remove} disabled={admin.user_id === user?.id}>
-          Remove admin
+          <Trash2 className="size-4" aria-hidden="true" /> Remove admin
         </Button>
+        <p className="mt-1.5 text-xs text-muted-foreground">
+          Removes admin access only — the account stays as a normal citizen account.
+        </p>
       </div>
       {editing && <AdminFormDialog areas={areas} admin={admin} onClose={() => setEditing(false)} />}
       {warning && <WarnDialog admin={admin} onClose={() => setWarning(false)} />}
@@ -299,7 +306,7 @@ function AdminFormDialog({
   const [busy, setBusy] = useState(false);
 
   async function save() {
-    if (admin && !fullName.trim()) return void toast.error("Name is required");
+    if (!fullName.trim()) return void toast.error("Name is required");
     if (!admin && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim()))
       return void toast.error("Enter a valid email address");
     setBusy(true);
@@ -332,7 +339,7 @@ function AdminFormDialog({
         </DialogHeader>
         <div className="space-y-3">
           <div className="space-y-1.5">
-            <Label htmlFor="aa-name">Full name{admin ? "" : " (optional)"}</Label>
+            <Label htmlFor="aa-name">Full name</Label>
             <Input id="aa-name" value={fullName} onChange={(e) => setFullName(e.target.value)} />
           </div>
           {!admin && (
