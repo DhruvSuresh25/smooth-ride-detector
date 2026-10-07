@@ -3,6 +3,8 @@ import { createServerFn } from "@tanstack/react-start";
 import { createClient } from "@supabase/supabase-js";
 
 import { Logo } from "@/components/brand/Logo";
+import { UserShell } from "@/components/layout/Shells";
+import { useAuth } from "@/hooks/useAuth";
 import type { Database } from "@/integrations/supabase/types";
 
 const getAreaStats = createServerFn({ method: "GET" }).handler(async () => {
@@ -43,16 +45,10 @@ export const Route = createFileRoute("/area-stats")({
 
 function AreaStatsPage() {
   const rows = Route.useLoaderData();
-  return (
-    <div className="min-h-screen bg-background">
-      <header className="flex items-center justify-between border-b border-border px-4 py-3 sm:px-8">
-        <Logo to="/" />
-        <Link to="/login" className="text-sm font-semibold text-primary">Sign in</Link>
-      </header>
-      <main className="mx-auto max-w-5xl px-4 py-10 sm:px-8">
-        <h1 className="text-2xl font-bold sm:text-3xl">Road repair stats by area</h1>
-        <p className="mt-2 text-sm text-muted-foreground">Totals only — no personal details are shown.</p>
-        <div className="mt-6 overflow-x-auto surface-card">
+  const { user, loading } = useAuth();
+
+  const table = (
+    <div className="overflow-x-auto surface-card">
           <table className="w-full text-sm">
             <thead className="border-b border-border text-left text-muted-foreground">
               <tr>
