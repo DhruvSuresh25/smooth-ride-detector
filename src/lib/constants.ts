@@ -9,6 +9,11 @@ export const TIMELINE_STEPS: ReportStatus[] = ["Submitted", "Received", "In Prog
 /** Statuses an area admin may set. */
 export const ADMIN_STATUSES: ReportStatus[] = ["Received", "In Progress", "Fixed", "Rejected", "Duplicate"];
 
+/** Workflow position of each status, for sorting lists in pipeline order. */
+export const STATUS_ORDER: Record<string, number> = Object.fromEntries(
+  STATUSES.map((s, i) => [s, i]),
+);
+
 export function isOverdue(r: { status: string; deadline_at: string | null }) {
   return !!r.deadline_at && !CLOSED_STATUSES.includes(r.status) && new Date(r.deadline_at) < new Date();
 }
