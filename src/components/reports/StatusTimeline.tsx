@@ -1,4 +1,4 @@
-import { Check, Circle, XCircle } from "lucide-react";
+import { Check, Circle, RotateCcw, XCircle } from "lucide-react";
 
 import { TIMELINE_STEPS, formatDateTime } from "@/lib/constants";
 import type { Report, StatusEvent } from "@/lib/reports";
@@ -12,7 +12,29 @@ export function StatusTimeline({
   events: StatusEvent[];
 }) {
   const rejected = report.status === "Rejected" || report.status === "Duplicate";
-  const currentIndex = TIMELINE_STEPS.indexOf(report.status as (typeof TIMELINE_STEPS)[number]);
+  // The timeline is built from the recorded history only, so it can never
+  // contradict the status badge. A step counts as reached when the latest
+  // event for it is not undone by a later reopen (a move back to Submitted).
+  const stepOf = (s: string) => TIMELINE_STEPS.indexOf(s as (typeof TIMELINE_STEPS)[number]);
+  const reopenedAt =
+    !rejected && report.status === "Submitted"
+      ? (events.filter((e) => e.status === "Submitted").at(-1)?.created_at ?? null)
+      : null;
+  const reopened = reopenedAt != null && events.some((e) => stepOf(e.status) > 0);
+
+  const latestEventFor = (status: string) => {
+    const list = events.filter((e) => e.status === status);
+    return list.at(-1) ?? null;
+  };
+  const reachedStep = (status: string) => {
+    const ev = latestEventFor(status);
+    if (!ev) return false;
+    if (reopened && stepOf(status) > 0) {
+      // After a reopen, only steps re-reached after the reopen count.
+      return new Date(ev.created_at) > new Date(reopenedAt!);
+    }
+    return true;
+  };
 
   const steps = [
     ...TIMELINE_STEPS.map((s) => ({ label: s === "Submitted" ? "Report Submitted" : s, status: s })),
@@ -21,10 +43,9 @@ export function StatusTimeline({
   return (
     <ol className="space-y-0">
       {steps.map((step, index) => {
-        const event = events.find((e) => e.status === step.status);
-        const stepIndex = TIMELINE_STEPS.indexOf(step.status);
-        const reached = index === 0 || (!rejected && currentIndex >= stepIndex && currentIndex >= 0);
-        const isCurrent = !rejected && index > 0 && stepIndex === currentIndex;
+        const event = latestEventFor(step.status);
+        const reached = step.status === "Submitted" ? true : !rejected && reachedStep(step.status);
+        const isCurrent = !rejected && step.status === report.status && step.status !== "Submitted";
 
         return (
           <li key={step.label} className="flex gap-4">
@@ -67,13 +88,28 @@ export function StatusTimeline({
                 )}
               </p>
               <p className="text-xs text-muted-foreground">
-                {event ? formatDateTime(event.created_at) : "Not reached yet"}
+                {reached && event ? formatDateTime(event.created_at) : "Not reached yet"}
               </p>
-              {event?.note && <p className="mt-1 text-sm text-muted-foreground">{event.note}</p>}
+              {reached && event?.note && <p className="mt-1 text-sm text-muted-foreground">{event.note}</p>}
             </div>
           </li>
         );
       })}
+
+      {reopened && (
+        <li className="flex gap-4">
+          <span className="grid size-8 shrink-0 place-items-center rounded-full border-2 border-sev-medium bg-sev-medium-bg text-sev-medium">
+            <RotateCcw className="size-4" aria-hidden="true" />
+          </span>
+          <div>
+            <p className="text-sm font-semibold">Reopened</p>
+            <p className="text-xs text-muted-foreground">{formatDateTime(reopenedAt)}</p>
+            <p className="mt-1 text-sm text-muted-foreground">
+              This report was reopened and is waiting to be reviewed again.
+            </p>
+          </div>
+        </li>
+      )}
 
       {rejected && (
         <li className="flex gap-4">

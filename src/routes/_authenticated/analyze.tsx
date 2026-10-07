@@ -27,7 +27,7 @@ import { Progress } from "@/components/ui/progress";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Textarea } from "@/components/ui/textarea";
 import { supabase } from "@/integrations/supabase/client";
-import { useAreas } from "@/lib/staff";
+import { areaForPoint, useAreas } from "@/lib/staff";
 import { useAuth, useProfile } from "@/hooks/useAuth";
 import { ANALYSIS_DISCLAIMER, formatDateTime } from "@/lib/constants";
 import {
@@ -101,6 +101,22 @@ function AnalyzePage() {
     if (fileInput.current) fileInput.current.value = "";
   }
 
+  async function detectArea(point: { lat: number; lng: number }) {
+    const match = await areaForPoint(point.lat, point.lng);
+    if (match) {
+      setAreaId(match);
+      const name = areas?.find((a) => a.id === match)?.name;
+      toast.success("Area detected", {
+        description: `Your location falls in ${name ?? "a configured area"} — it will go straight to that area's admin.`,
+      });
+    }
+  }
+
+  function setPoint(point: { lat: number; lng: number }) {
+    setCoords(point);
+    void detectArea(point);
+  }
+
   function useMyLocation() {
     if (!("geolocation" in navigator)) {
       setGeoState("denied");
@@ -112,7 +128,7 @@ function AnalyzePage() {
     setGeoState("locating");
     navigator.geolocation.getCurrentPosition(
       (position) => {
-        setCoords({
+        setPoint({
           lat: Number(position.coords.latitude.toFixed(6)),
           lng: Number(position.coords.longitude.toFixed(6)),
         });
@@ -323,7 +339,7 @@ function AnalyzePage() {
 
               <div className="space-y-2">
                 <p className="text-sm font-medium">Or tap the map to drop a pin</p>
-                <ReportsMap pick={coords} onPick={(p) => setCoords(p)} height={260} />
+                <ReportsMap pick={coords} onPick={setPoint} height={260} />
               </div>
 
               <div className="grid gap-3 sm:grid-cols-2">

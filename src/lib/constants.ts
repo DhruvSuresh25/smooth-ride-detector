@@ -9,20 +9,31 @@ export const TIMELINE_STEPS: ReportStatus[] = ["Submitted", "Received", "In Prog
 /** Statuses an area admin may set. */
 export const ADMIN_STATUSES: ReportStatus[] = ["Received", "In Progress", "Fixed", "Rejected", "Duplicate"];
 
+/** Workflow position of each status, for sorting lists in pipeline order. */
+export const STATUS_ORDER: Record<string, number> = Object.fromEntries(
+  STATUSES.map((s, i) => [s, i]),
+);
+
 export function isOverdue(r: { status: string; deadline_at: string | null }) {
   return !!r.deadline_at && !CLOSED_STATUSES.includes(r.status) && new Date(r.deadline_at) < new Date();
 }
 
 export const CLOSED_STATUSES: string[] = ["Fixed", "Rejected", "Duplicate"];
 
-/** "3 days left", "5 hours left", "Overdue by 2 days"; null when closed or no deadline. */
+/** "3 days left", "45 min left", "Overdue by 2 days"; null when closed or no deadline. */
 export function timeLeft(r: { status: string; deadline_at: string | null }) {
   if (!r.deadline_at || CLOSED_STATUSES.includes(r.status)) return null;
   const ms = new Date(r.deadline_at).getTime() - Date.now();
   const abs = Math.abs(ms);
   const days = Math.floor(abs / 86400000);
   const hours = Math.floor(abs / 3600000);
-  const span = days >= 1 ? `${days} day${days > 1 ? "s" : ""}` : `${Math.max(hours, 1)} hour${hours > 1 ? "s" : ""}`;
+  const minutes = Math.floor(abs / 60000);
+  const span =
+    days >= 1
+      ? `${days} day${days > 1 ? "s" : ""}`
+      : hours >= 1
+        ? `${hours} hour${hours > 1 ? "s" : ""}`
+        : `${Math.max(minutes, 1)} min`;
   return ms >= 0 ? `${span} left` : `Overdue by ${span}`;
 }
 
@@ -48,9 +59,13 @@ export const APP_TAGLINE = "Real-Time Pothole Detection Using Deep Learning";
 export const ANALYSIS_DISCLAIMER =
   "Severity is estimated by AI from the photo — an inspector confirms it on site.";
 
+/** All dates are stored in UTC and shown to users in Indian Standard Time. */
+export const DISPLAY_TIMEZONE = "Asia/Kolkata";
+
 export function formatDate(value?: string | null) {
   if (!value) return "—";
-  return new Date(value).toLocaleDateString(undefined, {
+  return new Date(value).toLocaleDateString("en-IN", {
+    timeZone: DISPLAY_TIMEZONE,
     year: "numeric",
     month: "short",
     day: "numeric",
@@ -59,13 +74,14 @@ export function formatDate(value?: string | null) {
 
 export function formatDateTime(value?: string | null) {
   if (!value) return "—";
-  return new Date(value).toLocaleString(undefined, {
+  return `${new Date(value).toLocaleString("en-IN", {
+    timeZone: DISPLAY_TIMEZONE,
     year: "numeric",
     month: "short",
     day: "numeric",
     hour: "2-digit",
     minute: "2-digit",
-  });
+  })} IST`;
 }
 
 export function initialsOf(name?: string | null, email?: string | null) {

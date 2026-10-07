@@ -1,4 +1,4 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { FileStack, Loader2, Search } from "lucide-react";
 import { useMemo, useState } from "react";
 
@@ -14,11 +14,21 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { SEVERITIES, STATUSES } from "@/lib/constants";
+import { SEVERITIES, STATUSES, STATUS_ORDER } from "@/lib/constants";
 import { useAllReports } from "@/lib/reports";
+import { useAreas, useStaffRole } from "@/lib/staff";
+
+type ReportSearch = { q?: string; status?: string; severity?: string; area?: string; sort?: string };
 
 export const Route = createFileRoute("/_authenticated/admin/reports/")({
   staticData: { sitemap: false },
+  validateSearch: (search: Record<string, unknown>): ReportSearch => ({
+    q: typeof search["q"] === "string" ? search["q"] : undefined,
+    status: typeof search["status"] === "string" ? search["status"] : undefined,
+    severity: typeof search["severity"] === "string" ? search["severity"] : undefined,
+    area: typeof search["area"] === "string" ? search["area"] : undefined,
+    sort: typeof search["sort"] === "string" ? search["sort"] : undefined,
+  }),
   head: () => ({
     meta: [
       { title: "All Reports — DriveSafe Vision Admin" },
@@ -38,11 +48,24 @@ const PAGE_SIZE = 12;
 
 function AdminReportsPage() {
   const { data: reports, isLoading } = useAllReports();
-  const [search, setSearch] = useState("");
-  const [status, setStatus] = useState("all");
-  const [severity, setSeverity] = useState("all");
-  const [sort, setSort] = useState("newest");
+  const { data: areas } = useAreas();
+  const { data: role } = useStaffRole();
+  const navigate = useNavigate({ from: Route.fullPath });
+  const params = Route.useSearch();
+  const search = params.q ?? "";
+  const status = params.status ?? "all";
+  const severity = params.severity ?? "all";
+  const area = params.area ?? "all";
+  const sort = params.sort ?? "newest";
   const [page, setPage] = useState(1);
+
+  const setFilters = (patch: Partial<ReportSearch>) => {
+    setPage(1);
+    void navigate({
+      replace: true,
+      search: (prev: ReportSearch) => ({ ...prev, ...patch }),
+    });
+  };
 
   const filtered = useMemo(() => {
     let list = [...(reports ?? [])];
@@ -58,17 +81,20 @@ function AdminReportsPage() {
     }
     if (status !== "all") list = list.filter((r) => r.status === status);
     if (severity !== "all") list = list.filter((r) => r.severity === severity);
+    if (area === "unassigned") list = list.filter((r) => !r.area_id);
+    else if (area !== "all") list = list.filter((r) => r.area_id === area);
 
     const rank = { Critical: 4, High: 3, Medium: 2, Low: 1 } as const;
     list.sort((a, b) => {
       if (sort === "oldest")
         return new Date(a.created_at).getTime() - new Date(b.created_at).getTime();
       if (sort === "severity") return rank[b.severity] - rank[a.severity];
-      if (sort === "status") return a.status.localeCompare(b.status);
+      if (sort === "status")
+        return (STATUS_ORDER[a.status] ?? 99) - (STATUS_ORDER[b.status] ?? 99);
       return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
     });
     return list;
-  }, [reports, search, status, severity, sort]);
+  }, [reports, search, status, severity, area, sort]);
 
   const pageCount = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE));
   const currentPage = Math.min(page, pageCount);
@@ -76,10 +102,10 @@ function AdminReportsPage() {
 
   return (
     <AdminShell
-      title="All Reports"
-      subtitle={`${filtered.length} of ${reports?.length ?? 0} report(s) shown`}
+      title={role?.isAreaAdmin && !role?.isSuper ? "My Area Complaints" : "All Reports"}
+      subtitle={`Showing ${filtered.length} of ${reports?.length ?? 0} report(s)`}
     >
-      <section className="surface-card mb-5 grid gap-3 p-4 sm:grid-cols-2 lg:grid-cols-4">
+      <section className="surface-card mb-5 grid gap-3 p-4 sm:grid-cols-2 lg:grid-cols-5">
         <div className="space-y-1.5">
           <Label htmlFor="admin-search">Search</Label>
           <div className="relative">
@@ -92,17 +118,14 @@ function AdminReportsPage() {
               className="pl-9"
               placeholder="Report no., address or user"
               value={search}
-              onChange={(e) => {
-                setSearch(e.target.value);
-                setPage(1);
-              }}
+              onChange={(e) => setFilters({ q: e.target.value })}
             />
           </div>
         </div>
 
         <div className="space-y-1.5">
           <Label htmlFor="admin-status">Status</Label>
-          <Select value={status} onValueChange={(v) => { setStatus(v); setPage(1); }}>
+          <Select value={status} onValueChange={(v) => setFilters({ status: v })}>
             <SelectTrigger id="admin-status">
               <SelectValue />
             </SelectTrigger>
@@ -119,7 +142,7 @@ function AdminReportsPage() {
 
         <div className="space-y-1.5">
           <Label htmlFor="admin-severity">Severity</Label>
-          <Select value={severity} onValueChange={(v) => { setSeverity(v); setPage(1); }}>
+          <Select value={severity} onValueChange={(v) => setFilters({ severity: v })}>
             <SelectTrigger id="admin-severity">
               <SelectValue />
             </SelectTrigger>
@@ -134,9 +157,29 @@ function AdminReportsPage() {
           </Select>
         </div>
 
+        {role?.isSuper && (
+          <div className="space-y-1.5">
+            <Label htmlFor="admin-area">Area</Label>
+            <Select value={area} onValueChange={(v) => setFilters({ area: v })}>
+              <SelectTrigger id="admin-area">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All areas</SelectItem>
+                <SelectItem value="unassigned">Unassigned (no area)</SelectItem>
+                {(areas ?? []).map((a) => (
+                  <SelectItem key={a.id} value={a.id}>
+                    {a.name}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+        )}
+
         <div className="space-y-1.5">
           <Label htmlFor="admin-sort">Sort by</Label>
-          <Select value={sort} onValueChange={setSort}>
+          <Select value={sort} onValueChange={(v) => setFilters({ sort: v })}>
             <SelectTrigger id="admin-sort">
               <SelectValue />
             </SelectTrigger>
@@ -144,7 +187,7 @@ function AdminReportsPage() {
               <SelectItem value="newest">Newest first</SelectItem>
               <SelectItem value="oldest">Oldest first</SelectItem>
               <SelectItem value="severity">Severity</SelectItem>
-              <SelectItem value="status">Status</SelectItem>
+              <SelectItem value="status">Status (workflow order)</SelectItem>
             </SelectContent>
           </Select>
         </div>

@@ -110,8 +110,8 @@ function AdminLoginPage() {
 
       <div className="surface-card flex gap-3 p-4 text-xs text-muted-foreground">
         <ShieldCheck className="size-4 shrink-0 text-primary" aria-hidden="true" />
-        Administrator accounts are granted server-side and are never listed here. See the project
-        README for the secure setup steps.
+        Administrator accounts are created by the super admin, who emails you a link to set your
+        own password.
       </div>
     </AuthLayout>
   );

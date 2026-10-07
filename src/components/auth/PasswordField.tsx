@@ -32,7 +32,7 @@ export function PasswordField({
   error,
   showStrength = false,
   autoComplete = "current-password",
-  placeholder = "••••••••",
+  placeholder = "Enter your password",
 }: {
   id: string;
   label: string;

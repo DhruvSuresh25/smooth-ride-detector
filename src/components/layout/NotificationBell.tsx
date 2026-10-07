@@ -1,6 +1,6 @@
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { Link } from "@tanstack/react-router";
-import { Bell } from "lucide-react";
+import { Bell, CheckCheck } from "lucide-react";
 import { useEffect } from "react";
 
 import { Button } from "@/components/ui/button";
@@ -39,6 +39,15 @@ export function NotificationBell() {
   });
   const unread = (items ?? []).filter((n) => !n.read_at).length;
 
+  async function markRead(id: string) {
+    await supabase
+      .from("notifications")
+      .update({ read_at: new Date().toISOString() })
+      .eq("id", id)
+      .is("read_at", null);
+    void qc.invalidateQueries({ queryKey: ["notifications"] });
+  }
+
   async function markAllRead() {
     if (!unread) return;
     await supabase
@@ -49,7 +58,7 @@ export function NotificationBell() {
   }
 
   return (
-    <Popover onOpenChange={(open) => !open && void markAllRead()}>
+    <Popover>
       <PopoverTrigger asChild>
         <Button variant="ghost" size="icon" aria-label={`Notifications (${unread} unread)`} className="relative">
           <Bell className="size-5" />
@@ -61,7 +70,18 @@ export function NotificationBell() {
         </Button>
       </PopoverTrigger>
       <PopoverContent align="end" className="w-80 p-0">
-        <div className="border-b border-border px-4 py-3 text-sm font-semibold">Notifications</div>
+        <div className="flex items-center justify-between border-b border-border px-4 py-3">
+          <span className="text-sm font-semibold">Notifications</span>
+          {unread > 0 && (
+            <button
+              type="button"
+              onClick={() => void markAllRead()}
+              className="inline-flex items-center gap-1 text-xs font-medium text-primary hover:underline"
+            >
+              <CheckCheck className="size-3.5" aria-hidden="true" /> Mark all as read
+            </button>
+          )}
+        </div>
         <ul className="max-h-96 overflow-y-auto">
           {(items ?? []).length === 0 && (
             <li className="px-4 py-6 text-center text-sm text-muted-foreground">No notifications yet</li>
@@ -77,11 +97,21 @@ export function NotificationBell() {
             return (
               <li key={n.id} className={cn("border-b border-border last:border-0", !n.read_at && "bg-primary-soft/50")}>
                 {n.link ? (
-                  <Link to={n.link} className="block px-4 py-3 hover:bg-muted">
+                  <Link
+                    to={n.link}
+                    onClick={() => void markRead(n.id)}
+                    className="block px-4 py-3 hover:bg-muted"
+                  >
                     {inner}
                   </Link>
                 ) : (
-                  <div className="px-4 py-3">{inner}</div>
+                  <button
+                    type="button"
+                    onClick={() => void markRead(n.id)}
+                    className="block w-full px-4 py-3 text-left hover:bg-muted"
+                  >
+                    {inner}
+                  </button>
                 )}
               </li>
             );

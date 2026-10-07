@@ -37,6 +37,7 @@ import {
 import { deleteUserAccount, setAccountStatus } from "@/lib/admin-users.functions";
 import { formatDate } from "@/lib/constants";
 import { useAllUsers } from "@/lib/reports";
+import { useAuth } from "@/hooks/useAuth";
 
 export const Route = createFileRoute("/_authenticated/admin/users")({
   staticData: { sitemap: false },
@@ -57,6 +58,7 @@ export const Route = createFileRoute("/_authenticated/admin/users")({
 
 function AdminUsersPage() {
   const { data: users, isLoading } = useAllUsers();
+  const { user: me } = useAuth();
   const queryClient = useQueryClient();
   const [search, setSearch] = useState("");
   const [roleFilter, setRoleFilter] = useState("all");
@@ -133,6 +135,7 @@ function AdminUsersPage() {
             <SelectContent>
               <SelectItem value="all">All roles</SelectItem>
               <SelectItem value="user">Citizens</SelectItem>
+              <SelectItem value="area_admin">Area admins</SelectItem>
               <SelectItem value="admin">Super admins</SelectItem>
             </SelectContent>
           </Select>
@@ -173,6 +176,10 @@ function AdminUsersPage() {
                         <Badge className="gap-1 bg-primary-soft text-primary hover:bg-primary-soft">
                           <ShieldCheck className="size-3" aria-hidden="true" /> Super admin
                         </Badge>
+                      ) : u.role === "area_admin" ? (
+                        <Badge className="gap-1 bg-accent text-accent-foreground hover:bg-accent">
+                          <UserRound className="size-3" aria-hidden="true" /> Area admin
+                        </Badge>
                       ) : (
                         <Badge variant="secondary" className="gap-1">
                           <UserRound className="size-3" aria-hidden="true" /> Citizen
@@ -192,26 +199,30 @@ function AdminUsersPage() {
                       </Badge>
                     </TableCell>
                     <TableCell className="text-right">
-                      <div className="flex justify-end gap-2">
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          disabled={pending === u.id}
-                          onClick={() => void toggleStatus(u.id, u.account_status)}
-                        >
-                          {u.account_status === "Suspended" ? "Activate" : "Suspend"}
-                        </Button>
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          className="text-destructive hover:text-destructive"
-                          disabled={pending === u.id}
-                          onClick={() => setToDelete({ id: u.id, name: u.full_name || u.email })}
-                        >
-                          <Trash2 className="size-4" aria-hidden="true" />
-                          <span className="sr-only">Delete {u.full_name || u.email}</span>
-                        </Button>
-                      </div>
+                      {u.id === me?.id ? (
+                        <span className="text-xs text-muted-foreground">This is you</span>
+                      ) : (
+                        <div className="flex justify-end gap-2">
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            disabled={pending === u.id}
+                            onClick={() => void toggleStatus(u.id, u.account_status)}
+                          >
+                            {u.account_status === "Suspended" ? "Activate" : "Suspend"}
+                          </Button>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            className="text-destructive hover:text-destructive"
+                            disabled={pending === u.id}
+                            onClick={() => setToDelete({ id: u.id, name: u.full_name || u.email })}
+                          >
+                            <Trash2 className="size-4" aria-hidden="true" />
+                            <span className="sr-only">Delete {u.full_name || u.email}</span>
+                          </Button>
+                        </div>
+                      )}
                     </TableCell>
                   </TableRow>
                 ))}
@@ -228,32 +239,36 @@ function AdminUsersPage() {
                     <p className="text-xs text-muted-foreground">{u.email}</p>
                   </div>
                   <Badge variant={u.role === "admin" ? "default" : "secondary"}>
-                    {u.role === "admin" ? "Super admin" : "Citizen"}
+                    {u.role === "admin" ? "Super admin" : u.role === "area_admin" ? "Area admin" : "Citizen"}
                   </Badge>
                 </div>
                 <p className="mt-2 text-xs text-muted-foreground">
                   {u.report_count} report(s) · joined {formatDate(u.created_at)} · {u.account_status}
                 </p>
-                <div className="mt-3 flex gap-2">
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    className="flex-1"
-                    disabled={pending === u.id}
-                    onClick={() => void toggleStatus(u.id, u.account_status)}
-                  >
-                    {u.account_status === "Suspended" ? "Activate" : "Suspend"}
-                  </Button>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    className="text-destructive"
-                    disabled={pending === u.id}
-                    onClick={() => setToDelete({ id: u.id, name: u.full_name || u.email })}
-                  >
-                    Delete
-                  </Button>
-                </div>
+                {u.id === me?.id ? (
+                  <p className="mt-3 text-xs text-muted-foreground">This is your own account.</p>
+                ) : (
+                  <div className="mt-3 flex gap-2">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="flex-1"
+                      disabled={pending === u.id}
+                      onClick={() => void toggleStatus(u.id, u.account_status)}
+                    >
+                      {u.account_status === "Suspended" ? "Activate" : "Suspend"}
+                    </Button>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="text-destructive"
+                      disabled={pending === u.id}
+                      onClick={() => setToDelete({ id: u.id, name: u.full_name || u.email })}
+                    >
+                      Delete
+                    </Button>
+                  </div>
+                )}
               </li>
             ))}
           </ul>

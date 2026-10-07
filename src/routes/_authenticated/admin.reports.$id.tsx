@@ -7,9 +7,11 @@ import { toast } from "sonner";
 import { AdminShell } from "@/components/layout/Shells";
 import { SeverityBadge, StatusBadge } from "@/components/SeverityBadge";
 import { StorageImage } from "@/components/StorageImage";
+import { ReportsMap } from "@/components/map/ReportsMap";
 import { StatusTimeline } from "@/components/reports/StatusTimeline";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
+import { Skeleton } from "@/components/ui/skeleton";
 import {
   Select,
   SelectContent,
@@ -162,9 +164,15 @@ function AdminReportDetailPage() {
   if (isLoading) {
     return (
       <AdminShell title="Report">
-        <div className="surface-card grid place-items-center gap-2 p-12 text-sm text-muted-foreground">
-          <Loader2 className="size-5 animate-spin text-primary" aria-hidden="true" />
-          Loading report…
+        <div className="grid gap-5 lg:grid-cols-[1.4fr_1fr]">
+          <div className="space-y-5">
+            <Skeleton className="h-72 w-full rounded-xl" />
+            <Skeleton className="h-48 w-full rounded-xl" />
+          </div>
+          <div className="space-y-5">
+            <Skeleton className="h-64 w-full rounded-xl" />
+            <Skeleton className="h-40 w-full rounded-xl" />
+          </div>
         </div>
       </AdminShell>
     );
@@ -174,7 +182,10 @@ function AdminReportDetailPage() {
     return (
       <AdminShell title="Report not found">
         <div className="surface-card grid place-items-center gap-3 p-12 text-center">
-          <p className="font-semibold">That report no longer exists.</p>
+          <p className="font-semibold">You don&apos;t have access to this report, or it no longer exists.</p>
+          <p className="text-sm text-muted-foreground">
+            Area admins can only open complaints in their own areas.
+          </p>
           <Button asChild variant="outline">
             <Link to="/admin/reports">Back to all reports</Link>
           </Button>
@@ -257,7 +268,7 @@ function AdminReportDetailPage() {
                 label="Fix deadline"
                 value={`${formatDateTime(report.deadline_at)}${timeLeft(report) ? ` (${timeLeft(report)})` : ""}`}
               />
-              <Detail label="Area" value={areas?.find((a) => a.id === report.area_id)?.name ?? "Not set"} />
+              <Detail label="Area" value={areas?.find((a) => a.id === report.area_id)?.name ?? "Unassigned"} />
               <Detail
                 label="Citizen rating"
                 value={report.citizen_rating != null ? `${report.citizen_rating} / 5` : "Not rated"}
@@ -291,14 +302,26 @@ function AdminReportDetailPage() {
               )}
             </dl>
             {report.latitude != null && report.longitude != null && (
-              <a
-                href={`https://www.openstreetmap.org/?mlat=${report.latitude}&mlon=${report.longitude}#map=17/${report.latitude}/${report.longitude}`}
-                target="_blank"
-                rel="noreferrer"
-                className="mt-4 inline-flex items-center gap-2 rounded-lg border border-border bg-muted/50 px-3 py-2 text-sm font-medium text-primary hover:bg-muted"
-              >
-                <MapPin className="size-4" aria-hidden="true" /> Open location on map
-              </a>
+              <div className="mt-4 space-y-3">
+                <ReportsMap
+                  points={[{
+                    id: report.id,
+                    lat: Number(report.latitude),
+                    lng: Number(report.longitude),
+                    label: report.report_number,
+                    status: report.status,
+                  }]}
+                  height={220}
+                />
+                <a
+                  href={`https://www.openstreetmap.org/?mlat=${report.latitude}&mlon=${report.longitude}#map=17/${report.latitude}/${report.longitude}`}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="inline-flex items-center gap-2 rounded-lg border border-border bg-muted/50 px-3 py-2 text-sm font-medium text-primary hover:bg-muted"
+                >
+                  <MapPin className="size-4" aria-hidden="true" /> Open location on map
+                </a>
+              </div>
             )}
           </section>
         </div>
@@ -329,7 +352,7 @@ function AdminReportDetailPage() {
                     <Select value={areaId} onValueChange={setAreaId}>
                       <SelectTrigger id="area-select"><SelectValue /></SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="none">No area</SelectItem>
+                        <SelectItem value="none">Unassigned</SelectItem>
                         {(areas ?? []).map((a) => (
                           <SelectItem key={a.id} value={a.id}>{a.name}</SelectItem>
                         ))}
@@ -365,11 +388,17 @@ function AdminReportDetailPage() {
               </div>
               <div className="space-y-2">
                 <Label htmlFor="repair-photo">After-repair photo (optional)</Label>
+                <label
+                  htmlFor="repair-photo"
+                  className="flex cursor-pointer items-center justify-center gap-2 rounded-lg border-2 border-dashed border-border bg-muted/40 px-3 py-4 text-sm font-medium text-muted-foreground transition-colors hover:border-primary hover:text-foreground"
+                >
+                  {repairFile ? repairFile.name : "Choose a photo (JPG or PNG, up to 8 MB)"}
+                </label>
                 <input
                   id="repair-photo"
                   type="file"
                   accept="image/jpeg,image/png"
-                  className="block w-full text-sm"
+                  className="sr-only"
                   onChange={(e) => setRepairFile(e.target.files?.[0] ?? null)}
                 />
                 {report.repair_image_url && (
