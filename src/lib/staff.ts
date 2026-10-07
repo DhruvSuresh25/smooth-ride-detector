@@ -37,6 +37,34 @@ export function useAreas() {
   });
 }
 
+/** Areas assigned to the signed-in area admin (empty for everyone else). */
+export function useMyAreas() {
+  const { user } = useAuth();
+  return useQuery({
+    queryKey: ["my-areas", user?.id],
+    enabled: !!user,
+    queryFn: async (): Promise<Area[]> => {
+      const { data: links, error } = await supabase
+        .from("area_admin_areas")
+        .select("area_id")
+        .eq("admin_id", user!.id);
+      if (error) throw error;
+      const ids = (links ?? []).map((l) => l.area_id);
+      if (!ids.length) return [];
+      const { data, error: e2 } = await supabase.from("areas").select("id, name").in("id", ids);
+      if (e2) throw e2;
+      return data ?? [];
+    },
+  });
+}
+
+/** Look up which area contains a GPS point (null when none matches). */
+export async function areaForPoint(lat: number, lng: number): Promise<string | null> {
+  const { data, error } = await supabase.rpc("area_for_point_within", { _lat: lat, _lng: lng });
+  if (error) return null;
+  return (data as string | null) ?? null;
+}
+
 export type Performance = {
   total: number;
   fixed: number;

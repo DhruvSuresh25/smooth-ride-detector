@@ -18,6 +18,13 @@ export function ReportsMapView({ reports, hrefBase }: { reports: Report[]; hrefB
   return (
     <section className="surface-card space-y-3 p-5">
       <ReportsMap points={points} height={520} />
+      {points.length === 0 && (
+        <p className="rounded-lg bg-muted/60 p-3 text-center text-sm text-muted-foreground">
+          {reports.length === 0
+            ? "No reports here yet — they will appear on the map as soon as one comes in."
+            : "None of these reports have a GPS location, so there are no pins to show."}
+        </p>
+      )}
       <div className="flex flex-wrap gap-3 text-xs">
         {Object.entries(MAP_LEGEND).map(([label, color]) => (
           <span key={label} className="inline-flex items-center gap-1.5">
