@@ -26,12 +26,20 @@ export const setAccountStatus = createServerFn({ method: "POST" })
   .inputValidator((input: { userId: string; status: "Active" | "Suspended" }) => input)
   .handler(async ({ data, context }) => {
     await assertAdmin(context);
+    if (data.userId === context.userId) {
+      throw new Error("You cannot suspend your own administrator account");
+    }
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     const { error } = await supabaseAdmin
       .from("profiles")
       .update({ account_status: data.status })
       .eq("id", data.userId);
     if (error) throw new Error(error.message);
+    await supabaseAdmin.rpc("log_audit", {
+      _actor: context.userId,
+      _action: "Account status changed",
+      _details: { user: data.userId, to: data.status },
+    });
     return { ok: true };
   });
 
