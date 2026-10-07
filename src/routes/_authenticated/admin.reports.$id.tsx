@@ -1,15 +1,17 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQueryClient } from "@tanstack/react-query";
-import { ArrowLeft, Loader2, MapPin, Save } from "lucide-react";
+import { ArrowLeft, MapPin, Save } from "lucide-react";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
 
 import { AdminShell } from "@/components/layout/Shells";
 import { SeverityBadge, StatusBadge } from "@/components/SeverityBadge";
 import { StorageImage } from "@/components/StorageImage";
+import { ReportsMap } from "@/components/map/ReportsMap";
 import { StatusTimeline } from "@/components/reports/StatusTimeline";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
+import { Skeleton } from "@/components/ui/skeleton";
 import {
   Select,
   SelectContent,
@@ -162,9 +164,15 @@ function AdminReportDetailPage() {
   if (isLoading) {
     return (
       <AdminShell title="Report">
-        <div className="surface-card grid place-items-center gap-2 p-12 text-sm text-muted-foreground">
-          <Loader2 className="size-5 animate-spin text-primary" aria-hidden="true" />
-          Loading report…
+        <div className="grid gap-5 lg:grid-cols-[1.4fr_1fr]">
+          <div className="space-y-5">
+            <Skeleton className="h-72 w-full rounded-xl" />
+            <Skeleton className="h-48 w-full rounded-xl" />
+          </div>
+          <div className="space-y-5">
+            <Skeleton className="h-64 w-full rounded-xl" />
+            <Skeleton className="h-40 w-full rounded-xl" />
+          </div>
         </div>
       </AdminShell>
     );
@@ -174,7 +182,10 @@ function AdminReportDetailPage() {
     return (
       <AdminShell title="Report not found">
         <div className="surface-card grid place-items-center gap-3 p-12 text-center">
-          <p className="font-semibold">That report no longer exists.</p>
+          <p className="font-semibold">You don&apos;t have access to this report, or it no longer exists.</p>
+          <p className="text-sm text-muted-foreground">
+            Area admins can only open complaints in their own areas.
+          </p>
           <Button asChild variant="outline">
             <Link to="/admin/reports">Back to all reports</Link>
           </Button>
