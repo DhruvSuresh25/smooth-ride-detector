@@ -88,13 +88,28 @@ export function StatusTimeline({
                 )}
               </p>
               <p className="text-xs text-muted-foreground">
-                {event ? formatDateTime(event.created_at) : "Not reached yet"}
+                {reached && event ? formatDateTime(event.created_at) : "Not reached yet"}
               </p>
-              {event?.note && <p className="mt-1 text-sm text-muted-foreground">{event.note}</p>}
+              {reached && event?.note && <p className="mt-1 text-sm text-muted-foreground">{event.note}</p>}
             </div>
           </li>
         );
       })}
+
+      {reopened && (
+        <li className="flex gap-4">
+          <span className="grid size-8 shrink-0 place-items-center rounded-full border-2 border-sev-medium bg-sev-medium-bg text-sev-medium">
+            <RotateCcw className="size-4" aria-hidden="true" />
+          </span>
+          <div>
+            <p className="text-sm font-semibold">Reopened</p>
+            <p className="text-xs text-muted-foreground">{formatDateTime(reopenedAt)}</p>
+            <p className="mt-1 text-sm text-muted-foreground">
+              This report was reopened and is waiting to be reviewed again.
+            </p>
+          </div>
+        </li>
+      )}
 
       {rejected && (
         <li className="flex gap-4">
