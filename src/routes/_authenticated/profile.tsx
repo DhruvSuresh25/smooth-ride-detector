@@ -41,7 +41,7 @@ function ProfilePage() {
   const { data: profile } = useProfile();
   const { data: reports } = useMyReports();
   const staffRole = useStaffRole();
-  const isStaff = staffRole.data === "super_admin" || staffRole.data === "area_admin";
+  const isStaff = !!staffRole.data && (staffRole.data.isSuper || staffRole.data.isAreaAdmin);
   const { data: myAreas } = useMyAreas();
   const { data: perf } = usePerformance(isStaff ? user?.id : undefined);
   const queryClient = useQueryClient();
@@ -162,9 +162,9 @@ function ProfilePage() {
           <div className="flex flex-wrap items-center gap-2">
             <h2 className="font-bold">Profile</h2>
             <Badge variant="secondary">
-              {staffRole.data === "super_admin"
+              {staffRole.data?.isSuper
                 ? "Super admin"
-                : staffRole.data === "area_admin"
+                : staffRole.data?.isAreaAdmin
                   ? "Area admin"
                   : "Citizen"}
             </Badge>

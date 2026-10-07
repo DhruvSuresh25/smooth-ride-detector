@@ -16,7 +16,8 @@ import { StatCard } from "@/components/reports/StatCard";
 import { Button } from "@/components/ui/button";
 import { averageResolutionDays, countByStatus, useAllReports, useAllUsers } from "@/lib/reports";
 import { useAuth } from "@/hooks/useAuth";
-import { formatDate, formatRate, formatRating, useMyAreas, useMyWarnings, usePerformance, useStaffRole } from "@/lib/staff";
+import { formatDate } from "@/lib/constants";
+import { formatRate, formatRating, useMyAreas, useMyWarnings, usePerformance, useStaffRole } from "@/lib/staff";
 
 export const Route = createFileRoute("/_authenticated/admin/dashboard")({
   staticData: { sitemap: false },

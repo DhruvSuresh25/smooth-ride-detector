@@ -22,13 +22,14 @@ type ReportSearch = { q?: string; status?: string; severity?: string; area?: str
 
 export const Route = createFileRoute("/_authenticated/admin/reports/")({
   staticData: { sitemap: false },
-  validateSearch: (search: Record<string, unknown>): ReportSearch => ({
-    q: typeof search["q"] === "string" ? search["q"] : undefined,
-    status: typeof search["status"] === "string" ? search["status"] : undefined,
-    severity: typeof search["severity"] === "string" ? search["severity"] : undefined,
-    area: typeof search["area"] === "string" ? search["area"] : undefined,
-    sort: typeof search["sort"] === "string" ? search["sort"] : undefined,
-  }),
+  validateSearch: (search: Record<string, unknown>): ReportSearch => {
+    const out: ReportSearch = {};
+    for (const key of ["q", "status", "severity", "area", "sort"] as const) {
+      const v = search[key];
+      if (typeof v === "string" && v) out[key] = v;
+    }
+    return out;
+  },
   head: () => ({
     meta: [
       { title: "All Reports — DriveSafe Vision Admin" },
