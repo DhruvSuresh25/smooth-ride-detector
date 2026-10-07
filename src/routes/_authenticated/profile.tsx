@@ -228,13 +228,13 @@ function ProfilePage() {
             {isStaff && (
               <div className="rounded-lg bg-muted/50 p-3 text-sm">
                 <p className="text-xs text-muted-foreground">
-                  {staffRole.data === "super_admin" ? "Full access to all areas" : "Your areas"}
+                  {staffRole.data?.isSuper ? "Full access to all areas" : "Your areas"}
                 </p>
                 <div className="mt-1.5 flex flex-wrap gap-1.5">
                   {(myAreas ?? []).map((a) => (
                     <Badge key={a.id} variant="outline">{a.name}</Badge>
                   ))}
-                  {!myAreas?.length && staffRole.data === "area_admin" && (
+                  {!myAreas?.length && staffRole.data?.isAreaAdmin && !staffRole.data.isSuper && (
                     <span className="text-xs text-muted-foreground">No areas assigned yet</span>
                   )}
                 </div>
