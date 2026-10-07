@@ -14,7 +14,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { SEVERITIES, STATUSES } from "@/lib/constants";
+import { SEVERITIES, STATUSES, STATUS_ORDER } from "@/lib/constants";
 import { useMyReports } from "@/lib/reports";
 
 export const Route = createFileRoute("/_authenticated/reports/")({
@@ -58,7 +58,10 @@ function MyReportsPage() {
     if (severity !== "all") list = list.filter((r) => r.severity === severity);
     if (dateFilter !== "all") {
       const days = Number(dateFilter);
-      const cutoff = Date.now() - days * 86400000;
+      // Inclusive: "Last 7 days" starts at the beginning of the day 6 days ago.
+      const start = new Date();
+      start.setHours(0, 0, 0, 0);
+      const cutoff = start.getTime() - (days - 1) * 86400000;
       list = list.filter((r) => new Date(r.created_at).getTime() >= cutoff);
     }
 
@@ -67,7 +70,8 @@ function MyReportsPage() {
       if (sort === "oldest")
         return new Date(a.created_at).getTime() - new Date(b.created_at).getTime();
       if (sort === "severity") return severityRank[b.severity] - severityRank[a.severity];
-      if (sort === "status") return a.status.localeCompare(b.status);
+      if (sort === "status")
+        return (STATUS_ORDER[a.status] ?? 99) - (STATUS_ORDER[b.status] ?? 99);
       return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
     });
     return list;
@@ -78,7 +82,7 @@ function MyReportsPage() {
   const visible = filtered.slice((currentPage - 1) * PAGE_SIZE, currentPage * PAGE_SIZE);
 
   return (
-    <UserShell title="My Reports" subtitle={`${reports?.length ?? 0} report(s) submitted`}>
+    <UserShell title="My Reports" subtitle={`Showing ${filtered.length} of ${reports?.length ?? 0} report(s)`}>
       <section className="surface-card mb-5 grid gap-3 p-4 sm:grid-cols-2 lg:grid-cols-5">
         <div className="space-y-1.5 sm:col-span-2 lg:col-span-1">
           <Label htmlFor="search">Search</Label>

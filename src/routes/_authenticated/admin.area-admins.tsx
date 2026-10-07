@@ -306,7 +306,7 @@ function AdminFormDialog({
   const [busy, setBusy] = useState(false);
 
   async function save() {
-    if (admin && !fullName.trim()) return void toast.error("Name is required");
+    if (!fullName.trim()) return void toast.error("Name is required");
     if (!admin && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim()))
       return void toast.error("Enter a valid email address");
     setBusy(true);
@@ -339,7 +339,7 @@ function AdminFormDialog({
         </DialogHeader>
         <div className="space-y-3">
           <div className="space-y-1.5">
-            <Label htmlFor="aa-name">Full name{admin ? "" : " (optional)"}</Label>
+            <Label htmlFor="aa-name">Full name</Label>
             <Input id="aa-name" value={fullName} onChange={(e) => setFullName(e.target.value)} />
           </div>
           {!admin && (
