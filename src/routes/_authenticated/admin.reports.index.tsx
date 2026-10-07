@@ -1,4 +1,4 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { FileStack, Loader2, Search } from "lucide-react";
 import { useMemo, useState } from "react";
 
@@ -14,11 +14,21 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { SEVERITIES, STATUSES } from "@/lib/constants";
+import { SEVERITIES, STATUSES, STATUS_ORDER } from "@/lib/constants";
 import { useAllReports } from "@/lib/reports";
+import { useAreas, useStaffRole } from "@/lib/staff";
+
+type ReportSearch = { q: string; status: string; severity: string; area: string; sort: string };
 
 export const Route = createFileRoute("/_authenticated/admin/reports/")({
   staticData: { sitemap: false },
+  validateSearch: (search: Record<string, unknown>): ReportSearch => ({
+    q: typeof search.q === "string" ? search.q : "",
+    status: typeof search.status === "string" ? search.status : "all",
+    severity: typeof search.severity === "string" ? search.severity : "all",
+    area: typeof search.area === "string" ? search.area : "all",
+    sort: typeof search.sort === "string" ? search.sort : "newest",
+  }),
   head: () => ({
     meta: [
       { title: "All Reports — DriveSafe Vision Admin" },
@@ -38,11 +48,19 @@ const PAGE_SIZE = 12;
 
 function AdminReportsPage() {
   const { data: reports, isLoading } = useAllReports();
-  const [search, setSearch] = useState("");
-  const [status, setStatus] = useState("all");
-  const [severity, setSeverity] = useState("all");
-  const [sort, setSort] = useState("newest");
+  const { data: areas } = useAreas();
+  const { data: role } = useStaffRole();
+  const navigate = useNavigate({ from: Route.fullPath });
+  const { q: search, status, severity, area, sort } = Route.useSearch();
   const [page, setPage] = useState(1);
+
+  const setFilters = (patch: Partial<ReportSearch>) => {
+    setPage(1);
+    void navigate({
+      replace: true,
+      search: (prev: ReportSearch) => ({ ...prev, ...patch }),
+    });
+  };
 
   const filtered = useMemo(() => {
     let list = [...(reports ?? [])];
@@ -58,17 +76,20 @@ function AdminReportsPage() {
     }
     if (status !== "all") list = list.filter((r) => r.status === status);
     if (severity !== "all") list = list.filter((r) => r.severity === severity);
+    if (area === "unassigned") list = list.filter((r) => !r.area_id);
+    else if (area !== "all") list = list.filter((r) => r.area_id === area);
 
     const rank = { Critical: 4, High: 3, Medium: 2, Low: 1 } as const;
     list.sort((a, b) => {
       if (sort === "oldest")
         return new Date(a.created_at).getTime() - new Date(b.created_at).getTime();
       if (sort === "severity") return rank[b.severity] - rank[a.severity];
-      if (sort === "status") return a.status.localeCompare(b.status);
+      if (sort === "status")
+        return (STATUS_ORDER[a.status] ?? 99) - (STATUS_ORDER[b.status] ?? 99);
       return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
     });
     return list;
-  }, [reports, search, status, severity, sort]);
+  }, [reports, search, status, severity, area, sort]);
 
   const pageCount = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE));
   const currentPage = Math.min(page, pageCount);
