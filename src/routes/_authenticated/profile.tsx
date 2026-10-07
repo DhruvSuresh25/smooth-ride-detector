@@ -8,6 +8,7 @@ import { PasswordField, passwordScore } from "@/components/auth/PasswordField";
 import { UserShell } from "@/components/layout/Shells";
 import { useSignedUrl } from "@/components/StorageImage";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -16,6 +17,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth, useProfile, useSignOut } from "@/hooks/useAuth";
 import { formatDate, initialsOf } from "@/lib/constants";
 import { useMyReports } from "@/lib/reports";
+import { formatRate, formatRating, useMyAreas, usePerformance, useStaffRole } from "@/lib/staff";
 
 export const Route = createFileRoute("/_authenticated/profile")({
   staticData: { sitemap: false },
@@ -38,6 +40,10 @@ function ProfilePage() {
   const { user } = useAuth();
   const { data: profile } = useProfile();
   const { data: reports } = useMyReports();
+  const staffRole = useStaffRole();
+  const isStaff = staffRole.data === "super_admin" || staffRole.data === "area_admin";
+  const { data: myAreas } = useMyAreas();
+  const { data: perf } = usePerformance(isStaff ? user?.id : undefined);
   const queryClient = useQueryClient();
   const signOut = useSignOut();
   const avatarInput = useRef<HTMLInputElement>(null);
@@ -153,7 +159,16 @@ function ProfilePage() {
     <UserShell allowStaff title="Profile & Settings" subtitle="Your account details and preferences">
       <div className="grid gap-5 lg:grid-cols-2">
         <section className="surface-card p-5">
-          <h2 className="font-bold">Profile</h2>
+          <div className="flex flex-wrap items-center gap-2">
+            <h2 className="font-bold">Profile</h2>
+            <Badge variant="secondary">
+              {staffRole.data === "super_admin"
+                ? "Super admin"
+                : staffRole.data === "area_admin"
+                  ? "Area admin"
+                  : "Citizen"}
+            </Badge>
+          </div>
           <div className="mt-4 flex items-center gap-4">
             <Avatar className="size-16">
               {avatarUrl && <AvatarImage src={avatarUrl} alt="Your avatar" />}
@@ -210,6 +225,31 @@ function ProfilePage() {
                 <p className="font-semibold">{reports?.length ?? 0}</p>
               </div>
             </div>
+            {isStaff && (
+              <div className="rounded-lg bg-muted/50 p-3 text-sm">
+                <p className="text-xs text-muted-foreground">
+                  {staffRole.data === "super_admin" ? "Full access to all areas" : "Your areas"}
+                </p>
+                <div className="mt-1.5 flex flex-wrap gap-1.5">
+                  {(myAreas ?? []).map((a) => (
+                    <Badge key={a.id} variant="outline">{a.name}</Badge>
+                  ))}
+                  {!myAreas?.length && staffRole.data === "area_admin" && (
+                    <span className="text-xs text-muted-foreground">No areas assigned yet</span>
+                  )}
+                </div>
+                <div className="mt-3 grid grid-cols-2 gap-3">
+                  <div>
+                    <p className="text-xs text-muted-foreground">On-time rate</p>
+                    <p className="font-semibold">{formatRate(perf)}</p>
+                  </div>
+                  <div>
+                    <p className="text-xs text-muted-foreground">Average rating</p>
+                    <p className="font-semibold">{formatRating(perf)}</p>
+                  </div>
+                </div>
+              </div>
+            )}
             <Button onClick={saveProfile} disabled={savingProfile}>
               {savingProfile && <Loader2 className="size-4 animate-spin" aria-hidden="true" />}
               Save changes
