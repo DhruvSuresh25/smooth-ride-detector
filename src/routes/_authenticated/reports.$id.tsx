@@ -1,15 +1,18 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { ArrowLeft, Info, Loader2, MapPin } from "lucide-react";
+import { ArrowLeft, Info, MapPin } from "lucide-react";
 
 import { SeverityBadge, StatusBadge } from "@/components/SeverityBadge";
 import { StorageImage } from "@/components/StorageImage";
 import { UserShell } from "@/components/layout/Shells";
+import { ReportsMap } from "@/components/map/ReportsMap";
 import { StatusTimeline } from "@/components/reports/StatusTimeline";
 import { Button } from "@/components/ui/button";
+import { Skeleton } from "@/components/ui/skeleton";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { formatDateTime, isOverdue, timeLeft } from "@/lib/constants";
 import { RateAndAdminCard } from "@/components/reports/RateAndAdminCard";
 import { useReport, useReportHistory } from "@/lib/reports";
+import { useAreas } from "@/lib/staff";
 
 export const Route = createFileRoute("/_authenticated/reports/$id")({
   staticData: { sitemap: false },
@@ -32,13 +35,21 @@ function ReportDetailPage() {
   const { id } = Route.useParams();
   const { data: report, isLoading } = useReport(id);
   const { data: history } = useReportHistory(id);
+  const { data: areas } = useAreas();
+  const areaName = areas?.find((a) => a.id === report?.area_id)?.name ?? null;
 
   if (isLoading) {
     return (
       <UserShell title="Report details">
-        <div className="surface-card grid place-items-center gap-2 p-12 text-sm text-muted-foreground">
-          <Loader2 className="size-5 animate-spin text-primary" aria-hidden="true" />
-          Loading report…
+        <div className="grid gap-5 lg:grid-cols-[1.4fr_1fr]">
+          <div className="space-y-5">
+            <Skeleton className="h-72 w-full rounded-xl" />
+            <Skeleton className="h-48 w-full rounded-xl" />
+          </div>
+          <div className="space-y-5">
+            <Skeleton className="h-64 w-full rounded-xl" />
+            <Skeleton className="h-40 w-full rounded-xl" />
+          </div>
         </div>
       </UserShell>
     );
@@ -133,6 +144,7 @@ function ReportDetailPage() {
             <dl className="mt-4 grid gap-4 sm:grid-cols-2">
               <Detail label="Submitted by" value={report.submitter_name || report.submitter_email} />
               <Detail label="Submitted" value={formatDateTime(report.created_at)} />
+              <Detail label="Area" value={areaName ?? "Unassigned"} />
               <Detail label="Address" value={report.address || "Not provided"} />
               <Detail
                 label="Coordinates"
@@ -149,14 +161,26 @@ function ReportDetailPage() {
               )}
             </dl>
             {report.latitude != null && report.longitude != null && (
-              <a
-                href={`https://www.openstreetmap.org/?mlat=${report.latitude}&mlon=${report.longitude}#map=17/${report.latitude}/${report.longitude}`}
-                target="_blank"
-                rel="noreferrer"
-                className="mt-4 inline-flex items-center gap-2 rounded-lg border border-border bg-muted/50 px-3 py-2 text-sm font-medium text-primary hover:bg-muted"
-              >
-                <MapPin className="size-4" aria-hidden="true" /> Open location on map
-              </a>
+              <div className="mt-4 space-y-3">
+                <ReportsMap
+                  points={[{
+                    id: report.id,
+                    lat: Number(report.latitude),
+                    lng: Number(report.longitude),
+                    label: report.report_number,
+                    status: report.status,
+                  }]}
+                  height={220}
+                />
+                <a
+                  href={`https://www.openstreetmap.org/?mlat=${report.latitude}&mlon=${report.longitude}#map=17/${report.latitude}/${report.longitude}`}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="inline-flex items-center gap-2 rounded-lg border border-border bg-muted/50 px-3 py-2 text-sm font-medium text-primary hover:bg-muted"
+                >
+                  <MapPin className="size-4" aria-hidden="true" /> Open location on map
+                </a>
+              </div>
             )}
           </section>
         </div>
