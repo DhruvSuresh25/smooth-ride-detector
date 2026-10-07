@@ -30,7 +30,7 @@ export const createAreaAdmin = createServerFn({ method: "POST" })
     z
       .object({
         email: z.string().trim().toLowerCase().email().max(255),
-        fullName: z.string().trim().max(100).optional(),
+        fullName: z.string().trim().min(1, "A name is required").max(100),
         areaIds: z.array(uuid).max(50),
       })
       .parse(input),
@@ -103,6 +103,11 @@ export const createAreaAdmin = createServerFn({ method: "POST" })
     } catch (e) {
       console.error("area admin email failed", e);
     }
+    await supabaseAdmin.rpc("log_audit", {
+      _actor: context.userId,
+      _action: "Area admin added",
+      _details: { email: data.email, name: fullName, areas: areaNames || null },
+    });
     return { ok: true as const, id, emailSent };
   });
 
@@ -177,5 +182,10 @@ export const deleteAreaAdmin = createServerFn({ method: "POST" })
     await supabaseAdmin.from("area_admin_areas").delete().eq("admin_id", data.userId);
     const { error } = await supabaseAdmin.from("area_admins").delete().eq("user_id", data.userId);
     if (error) return { ok: false as const, error: error.message };
+    await supabaseAdmin.rpc("log_audit", {
+      _actor: context.userId,
+      _action: "Area admin removed",
+      _details: { user: data.userId },
+    });
     return { ok: true as const };
   });
