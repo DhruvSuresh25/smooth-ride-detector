@@ -97,10 +97,10 @@ function AdminReportsPage() {
 
   return (
     <AdminShell
-      title="All Reports"
-      subtitle={`${filtered.length} of ${reports?.length ?? 0} report(s) shown`}
+      title={role?.isAreaAdmin && !role?.isSuper ? "My Area Complaints" : "All Reports"}
+      subtitle={`Showing ${filtered.length} of ${reports?.length ?? 0} report(s)`}
     >
-      <section className="surface-card mb-5 grid gap-3 p-4 sm:grid-cols-2 lg:grid-cols-4">
+      <section className="surface-card mb-5 grid gap-3 p-4 sm:grid-cols-2 lg:grid-cols-5">
         <div className="space-y-1.5">
           <Label htmlFor="admin-search">Search</Label>
           <div className="relative">
@@ -113,17 +113,14 @@ function AdminReportsPage() {
               className="pl-9"
               placeholder="Report no., address or user"
               value={search}
-              onChange={(e) => {
-                setSearch(e.target.value);
-                setPage(1);
-              }}
+              onChange={(e) => setFilters({ q: e.target.value })}
             />
           </div>
         </div>
 
         <div className="space-y-1.5">
           <Label htmlFor="admin-status">Status</Label>
-          <Select value={status} onValueChange={(v) => { setStatus(v); setPage(1); }}>
+          <Select value={status} onValueChange={(v) => setFilters({ status: v })}>
             <SelectTrigger id="admin-status">
               <SelectValue />
             </SelectTrigger>
@@ -140,7 +137,7 @@ function AdminReportsPage() {
 
         <div className="space-y-1.5">
           <Label htmlFor="admin-severity">Severity</Label>
-          <Select value={severity} onValueChange={(v) => { setSeverity(v); setPage(1); }}>
+          <Select value={severity} onValueChange={(v) => setFilters({ severity: v })}>
             <SelectTrigger id="admin-severity">
               <SelectValue />
             </SelectTrigger>
@@ -155,9 +152,29 @@ function AdminReportsPage() {
           </Select>
         </div>
 
+        {role?.isSuper && (
+          <div className="space-y-1.5">
+            <Label htmlFor="admin-area">Area</Label>
+            <Select value={area} onValueChange={(v) => setFilters({ area: v })}>
+              <SelectTrigger id="admin-area">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All areas</SelectItem>
+                <SelectItem value="unassigned">Unassigned (no area)</SelectItem>
+                {(areas ?? []).map((a) => (
+                  <SelectItem key={a.id} value={a.id}>
+                    {a.name}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+        )}
+
         <div className="space-y-1.5">
           <Label htmlFor="admin-sort">Sort by</Label>
-          <Select value={sort} onValueChange={setSort}>
+          <Select value={sort} onValueChange={(v) => setFilters({ sort: v })}>
             <SelectTrigger id="admin-sort">
               <SelectValue />
             </SelectTrigger>
@@ -165,7 +182,7 @@ function AdminReportsPage() {
               <SelectItem value="newest">Newest first</SelectItem>
               <SelectItem value="oldest">Oldest first</SelectItem>
               <SelectItem value="severity">Severity</SelectItem>
-              <SelectItem value="status">Status</SelectItem>
+              <SelectItem value="status">Status (workflow order)</SelectItem>
             </SelectContent>
           </Select>
         </div>
