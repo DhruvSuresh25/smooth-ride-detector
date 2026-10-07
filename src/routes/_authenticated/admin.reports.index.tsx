@@ -18,16 +18,16 @@ import { SEVERITIES, STATUSES, STATUS_ORDER } from "@/lib/constants";
 import { useAllReports } from "@/lib/reports";
 import { useAreas, useStaffRole } from "@/lib/staff";
 
-type ReportSearch = { q: string; status: string; severity: string; area: string; sort: string };
+type ReportSearch = { q?: string; status?: string; severity?: string; area?: string; sort?: string };
 
 export const Route = createFileRoute("/_authenticated/admin/reports/")({
   staticData: { sitemap: false },
   validateSearch: (search: Record<string, unknown>): ReportSearch => ({
-    q: typeof search.q === "string" ? search.q : "",
-    status: typeof search.status === "string" ? search.status : "all",
-    severity: typeof search.severity === "string" ? search.severity : "all",
-    area: typeof search.area === "string" ? search.area : "all",
-    sort: typeof search.sort === "string" ? search.sort : "newest",
+    q: typeof search["q"] === "string" ? search["q"] : undefined,
+    status: typeof search["status"] === "string" ? search["status"] : undefined,
+    severity: typeof search["severity"] === "string" ? search["severity"] : undefined,
+    area: typeof search["area"] === "string" ? search["area"] : undefined,
+    sort: typeof search["sort"] === "string" ? search["sort"] : undefined,
   }),
   head: () => ({
     meta: [
@@ -51,7 +51,12 @@ function AdminReportsPage() {
   const { data: areas } = useAreas();
   const { data: role } = useStaffRole();
   const navigate = useNavigate({ from: Route.fullPath });
-  const { q: search, status, severity, area, sort } = Route.useSearch();
+  const params = Route.useSearch();
+  const search = params.q ?? "";
+  const status = params.status ?? "all";
+  const severity = params.severity ?? "all";
+  const area = params.area ?? "all";
+  const sort = params.sort ?? "newest";
   const [page, setPage] = useState(1);
 
   const setFilters = (patch: Partial<ReportSearch>) => {
