@@ -1,5 +1,7 @@
+import { useAreaAdmins, type AreaAdminRow } from "@/features/staff/admin-queries";
+import { errorMessage } from "@/lib/api/errors";
 import { createFileRoute } from "@tanstack/react-router";
-import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { Loader2, Plus, Trash2 } from "lucide-react";
 import { useState } from "react";
@@ -40,6 +42,8 @@ export const Route = createFileRoute("/_authenticated/admin/area-admins")({
   staticData: { sitemap: false },
   head: () => ({
     meta: [
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary" },
       { title: "Area Admins — DriveSafe Vision" },
       { name: "description", content: "Manage areas, area admins and their performance." },
       { property: "og:title", content: "Area Admins — DriveSafe Vision" },
@@ -50,42 +54,6 @@ export const Route = createFileRoute("/_authenticated/admin/area-admins")({
   component: AreaAdminsPage,
 });
 
-type AreaAdminRow = {
-  user_id: string;
-  full_name: string;
-  email: string;
-  account_status: string;
-  areaIds: string[];
-};
-
-function useAreaAdmins() {
-  return useQuery({
-    queryKey: ["area-admins"],
-    queryFn: async (): Promise<AreaAdminRow[]> => {
-      const [{ data: admins, error }, { data: links }] = await Promise.all([
-        supabase.from("area_admins").select("user_id").order("created_at"),
-        supabase.from("area_admin_areas").select("admin_id, area_id"),
-      ]);
-      if (error) throw error;
-      const ids = (admins ?? []).map((a) => a.user_id);
-      if (!ids.length) return [];
-      const { data: profiles } = await supabase
-        .from("profiles")
-        .select("id, full_name, email, account_status")
-        .in("id", ids);
-      return ids.map((id) => {
-        const p = profiles?.find((x) => x.id === id);
-        return {
-          user_id: id,
-          full_name: p?.full_name ?? "",
-          email: p?.email ?? "",
-          account_status: p?.account_status ?? "Active",
-          areaIds: (links ?? []).filter((l) => l.admin_id === id).map((l) => l.area_id),
-        };
-      });
-    },
-  });
-}
 
 function AreaAdminsPage() {
   const { data: areas } = useAreas();
@@ -210,21 +178,29 @@ function AdminCard({
   };
 
   async function toggleSuspend() {
+    try {
     const res = await setStatus({
       data: { userId: admin.user_id, status: suspended ? "Active" : "Suspended" },
     });
     if (!res.ok) return void toast.error("Could not update", { description: res.error });
     toast.success(suspended ? "Admin reactivated" : "Admin suspended");
     refresh();
+    } catch (error) {
+      toast.error("Could not update", { description: errorMessage(error, "Please try again.") });
+    }
   }
 
   async function remove() {
     if (!confirm(`Remove ${admin.full_name || admin.email} as an admin? Their account stays as a normal citizen account, and their complaints become unassigned.`))
       return;
+    try {
     const res = await del({ data: { userId: admin.user_id } });
     if (!res.ok) return void toast.error("Could not delete", { description: res.error });
     toast.success("Admin removed");
     refresh();
+    } catch (error) {
+      toast.error("Could not delete", { description: errorMessage(error, "Please try again.") });
+    }
   }
 
   return (
@@ -325,7 +301,7 @@ function AdminFormDialog({
       void qc.invalidateQueries({ queryKey: ["area-admins"] });
       onClose();
     } catch (e) {
-      toast.error("Could not save", { description: (e as Error).message });
+      toast.error("Could not save", { description: errorMessage(e, "Please try again.") });
     } finally {
       setBusy(false);
     }

@@ -26,7 +26,8 @@ import { Label } from "@/components/ui/label";
 import { Progress } from "@/components/ui/progress";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Textarea } from "@/components/ui/textarea";
-import { supabase } from "@/integrations/supabase/client";
+import { submitAnalyzedReport } from "@/features/reports/submission";
+import { errorMessage } from "@/lib/api/errors";
 import { areaForPoint, useAreas } from "@/lib/staff";
 import { useAuth, useProfile } from "@/hooks/useAuth";
 import { ANALYSIS_DISCLAIMER, formatDateTime } from "@/lib/constants";
@@ -35,12 +36,14 @@ import {
   PROGRESS_STAGES,
   type AnalysisResult,
   type ProgressStage,
-} from "@/services/potholeAnalysis";
+} from "@/services/pothole-analysis";
 
 export const Route = createFileRoute("/_authenticated/analyze")({
   staticData: { sitemap: false },
   head: () => ({
     meta: [
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary" },
       { title: "Analyze Road Image — DriveSafe Vision" },
       {
         name: "description",
@@ -155,7 +158,7 @@ function AnalyzePage() {
         description: `${analysis.potholeCount} pothole(s) detected · ${analysis.severity} severity`,
       });
     } catch (error) {
-      toast.error("Analysis failed", { description: (error as Error).message });
+      toast.error("Analysis failed", { description: errorMessage(error, "Please try again.") });
     } finally {
       setStage(null);
     }
@@ -172,48 +175,12 @@ function AnalyzePage() {
 
     setSubmitting(true);
     try {
-      const stamp = `${Date.now()}`;
-      const ext = file.type === "image/png" ? "png" : "jpg";
-      const originalPath = `${user.id}/${stamp}-original.${ext}`;
-      const { error: originalError } = await supabase.storage
-        .from("report-original-images")
-        .upload(originalPath, file, { contentType: file.type });
-      if (originalError) throw originalError;
-
-      let annotatedRef: string | null = null;
-      if (result.annotatedImageBlob) {
-        const annotatedPath = `${user.id}/${stamp}-annotated.jpg`;
-        const { error: annotatedError } = await supabase.storage
-          .from("report-annotated-images")
-          .upload(annotatedPath, result.annotatedImageBlob, { contentType: "image/jpeg" });
-        if (annotatedError) throw annotatedError;
-        annotatedRef = `report-annotated-images/${annotatedPath}`;
-      }
-
-      const { data, error } = await supabase
-        .from("reports")
-        .insert({
-          user_id: user.id,
-          submitter_name: profile?.full_name ?? "",
-          submitter_email: profile?.email ?? user.email ?? "",
-          original_image_url: `report-original-images/${originalPath}`,
-          annotated_image_url: annotatedRef,
-          address: address.trim(),
-          latitude: coords?.lat ?? null,
-          longitude: coords?.lng ?? null,
-          pothole_count: result.potholeCount,
-          severity: result.severity,
-          confidence: result.confidence,
-          estimated_width: result.estimatedWidth,
-          estimated_height: result.estimatedHeight,
-          road_position: result.roadPosition,
-          description: description.trim() || null,
-          status: "Submitted",
-          area_id: areaId || null,
-        })
-        .select("id, report_number")
-        .single();
-      if (error) throw error;
+      const data = await submitAnalyzedReport({
+        file, result, userId: user.id,
+        name: profile?.full_name ?? "",
+        email: profile?.email ?? user.email ?? "",
+        address, coords, description, areaId,
+      });
 
       await queryClient.invalidateQueries({ queryKey: ["reports"] });
       toast.success(`Report ${data.report_number} submitted`, {
@@ -221,7 +188,7 @@ function AnalyzePage() {
       });
       navigate({ to: "/reports/$id", params: { id: data.id } });
     } catch (error) {
-      toast.error("Could not submit report", { description: (error as Error).message });
+      toast.error("Could not submit report", { description: errorMessage(error, "Please try again.") });
     } finally {
       setSubmitting(false);
     }

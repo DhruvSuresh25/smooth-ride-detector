@@ -21,6 +21,8 @@ export const Route = createFileRoute("/_authenticated/dashboard")({
   staticData: { sitemap: false },
   head: () => ({
     meta: [
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary" },
       { title: "Dashboard — DriveSafe Vision" },
       { name: "description", content: "Your pothole reports and their current status." },
       { property: "og:title", content: "Dashboard — DriveSafe Vision" },

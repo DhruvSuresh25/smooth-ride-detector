@@ -18,6 +18,8 @@ export const Route = createFileRoute("/login")({
   staticData: { sitemap: true },
   head: () => ({
     meta: [
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary" },
       { title: "Sign in — DriveSafe Vision" },
       { name: "description", content: "Sign in to submit and track pothole reports." },
       { property: "og:title", content: "Sign in — DriveSafe Vision" },

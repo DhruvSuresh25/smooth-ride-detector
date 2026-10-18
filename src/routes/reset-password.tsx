@@ -12,6 +12,8 @@ export const Route = createFileRoute("/reset-password")({
   staticData: { sitemap: false },
   head: () => ({
     meta: [
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary" },
       { title: "Set a new password — DriveSafe Vision" },
       { name: "robots", content: "noindex" },
       { name: "description", content: "Choose a new password for your account." },

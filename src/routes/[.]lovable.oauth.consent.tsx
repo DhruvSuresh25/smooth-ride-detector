@@ -16,7 +16,14 @@ const oauth = () => (supabase.auth as unknown as { oauth: OAuthApi }).oauth;
 export const Route = createFileRoute("/.lovable/oauth/consent")({
   staticData: { sitemap: false },
   ssr: false,
-  head: () => ({ meta: [{ title: "Connect an app — DriveSafe Vision" }] }),
+  head: () => ({ meta: [
+    { title: "Connect an app — DriveSafe Vision" },
+    { name: "description", content: "Approve or decline an agent connection to your DriveSafe Vision account." },
+    { property: "og:title", content: "Connect an app — DriveSafe Vision" },
+    { property: "og:description", content: "Approve or decline an agent connection to your DriveSafe Vision account." },
+    { property: "og:type", content: "website" },
+    { name: "twitter:card", content: "summary" },
+  ] }),
   validateSearch: (s: Record<string, unknown>) => ({
     authorization_id: typeof s["authorization_id"] === "string" ? s["authorization_id"] : "",
   }),
@@ -26,7 +33,8 @@ export const Route = createFileRoute("/.lovable/oauth/consent")({
     if (!data.session) throw redirect({ to: "/login", search: { next: location.pathname + location.searchStr } });
   },
   loader: async ({ location }) => {
-    const id = new URLSearchParams(location.search).get("authorization_id")!;
+    const id = new URLSearchParams(location.search).get("authorization_id");
+    if (!id) throw new Error("Missing authorization_id");
     const { data, error } = await oauth().getAuthorizationDetails(id);
     if (error) throw new Error(error.message);
     const immediate = data?.["redirect_url"] ?? data?.["redirect_to"];
@@ -50,16 +58,22 @@ function Consent() {
 
   async function decide(approve: boolean) {
     setBusy(true);
-    const { data, error } = approve
-      ? await oauth().approveAuthorization(authorization_id)
-      : await oauth().denyAuthorization(authorization_id);
-    const target = data?.["redirect_url"] ?? data?.["redirect_to"];
-    if (error || !target) {
+    setError(null);
+    try {
+      const { data, error } = approve
+        ? await oauth().approveAuthorization(authorization_id)
+        : await oauth().denyAuthorization(authorization_id);
+      const target = data?.["redirect_url"] ?? data?.["redirect_to"];
+      if (error || !target) {
+        setError(error?.message ?? "No redirect was returned. Please try again.");
+        return;
+      }
+      window.location.href = target;
+    } catch {
+      setError("Could not complete this connection. Please try again.");
+    } finally {
       setBusy(false);
-      setError(error?.message ?? "No redirect was returned. Please try again.");
-      return;
     }
-    window.location.href = target;
   }
 
   return (

@@ -20,6 +20,8 @@ export const Route = createFileRoute("/_authenticated/admin/analytics")({
   staticData: { sitemap: false },
   head: () => ({
     meta: [
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary" },
       { title: "Analytics — DriveSafe Vision Admin" },
       { name: "description", content: "Trends, severity mix and hotspots across pothole reports." },
       { property: "og:title", content: "Analytics — DriveSafe Vision Admin" },

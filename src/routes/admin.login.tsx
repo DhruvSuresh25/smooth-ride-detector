@@ -17,6 +17,8 @@ export const Route = createFileRoute("/admin/login")({
   staticData: { sitemap: false },
   head: () => ({
     meta: [
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary" },
       { title: "Administrator sign in — DriveSafe Vision" },
       {
         name: "description",

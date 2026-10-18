@@ -23,6 +23,8 @@ export const Route = createFileRoute("/_authenticated/profile")({
   staticData: { sitemap: false },
   head: () => ({
     meta: [
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary" },
       { title: "Profile & Settings — DriveSafe Vision" },
       { name: "description", content: "Manage your account details, password and preferences." },
       { property: "og:title", content: "Profile & Settings — DriveSafe Vision" },

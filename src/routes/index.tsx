@@ -23,6 +23,8 @@ export const Route = createFileRoute("/")({
   staticData: { sitemap: true },
   head: () => ({
     meta: [
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary" },
       { title: "DriveSafe Vision — Detect potholes, improve roads" },
       {
         name: "description",
