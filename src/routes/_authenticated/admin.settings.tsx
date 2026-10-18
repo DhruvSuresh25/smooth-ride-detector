@@ -74,6 +74,8 @@ export const Route = createFileRoute("/_authenticated/admin/settings")({
   staticData: { sitemap: false },
   head: () => ({
     meta: [
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary" },
       { title: "Settings — DriveSafe Vision Admin" },
       { name: "description", content: "System configuration, detection source and workflow rules." },
       { property: "og:title", content: "Settings — DriveSafe Vision Admin" },

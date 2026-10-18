@@ -22,6 +22,8 @@ export const Route = createFileRoute("/_authenticated/reports/")({
   staticData: { sitemap: false },
   head: () => ({
     meta: [
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary" },
       { title: "My Reports — DriveSafe Vision" },
       { name: "description", content: "Search, filter and track every pothole report you filed." },
       { property: "og:title", content: "My Reports — DriveSafe Vision" },

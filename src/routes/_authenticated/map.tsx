@@ -8,6 +8,8 @@ export const Route = createFileRoute("/_authenticated/map")({
   staticData: { sitemap: false },
   head: () => ({
     meta: [
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary" },
       { title: "My complaints map — DriveSafe Vision" },
       { name: "description", content: "Map of your pothole complaints coloured by status." },
       { property: "og:title", content: "My complaints map — DriveSafe Vision" },

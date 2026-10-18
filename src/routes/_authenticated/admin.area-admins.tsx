@@ -40,6 +40,8 @@ export const Route = createFileRoute("/_authenticated/admin/area-admins")({
   staticData: { sitemap: false },
   head: () => ({
     meta: [
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary" },
       { title: "Area Admins — DriveSafe Vision" },
       { name: "description", content: "Manage areas, area admins and their performance." },
       { property: "og:title", content: "Area Admins — DriveSafe Vision" },

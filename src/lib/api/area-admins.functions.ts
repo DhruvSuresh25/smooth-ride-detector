@@ -144,7 +144,7 @@ export const setAreaAdminStatus = createServerFn({ method: "POST" })
       .from("profiles")
       .update({ account_status: data.status })
       .eq("id", data.userId);
-    assertRequestSucceeded({ error }, "Could not update the area-admin account. Refresh before retrying.");
+    if (error) return { ok: false as const, error: "Could not update the area-admin account. Refresh before retrying." };
     return { ok: true as const };
   });
 
@@ -173,7 +173,7 @@ export const deleteAreaAdmin = createServerFn({ method: "POST" })
     assertRequestSucceeded(await supabaseAdmin.from("admin_warnings").delete().eq("admin_id", data.userId), "Could not clear admin warnings. Refresh before retrying.");
     assertRequestSucceeded(await supabaseAdmin.from("area_admin_areas").delete().eq("admin_id", data.userId), "Could not remove previous area assignments. Refresh before retrying.");
     const { error } = await supabaseAdmin.from("area_admins").delete().eq("user_id", data.userId);
-    assertRequestSucceeded({ error }, "Could not update the area-admin account. Refresh before retrying.");
+    if (error) return { ok: false as const, error: "Could not update the area-admin account. Refresh before retrying." };
     assertRequestSucceeded(await supabaseAdmin.rpc("log_audit", {
       _actor: context.userId,
       _action: "Area admin removed",

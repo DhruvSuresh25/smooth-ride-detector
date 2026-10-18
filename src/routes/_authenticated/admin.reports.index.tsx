@@ -33,6 +33,8 @@ export const Route = createFileRoute("/_authenticated/admin/reports/")({
   },
   head: () => ({
     meta: [
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary" },
       { title: "All Reports — DriveSafe Vision Admin" },
       { name: "description", content: "Review, filter and update every submitted pothole report." },
       { property: "og:title", content: "All Reports — DriveSafe Vision Admin" },

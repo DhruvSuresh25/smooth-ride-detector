@@ -42,6 +42,8 @@ export const Route = createFileRoute("/_authenticated/analyze")({
   staticData: { sitemap: false },
   head: () => ({
     meta: [
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary" },
       { title: "Analyze Road Image — DriveSafe Vision" },
       {
         name: "description",

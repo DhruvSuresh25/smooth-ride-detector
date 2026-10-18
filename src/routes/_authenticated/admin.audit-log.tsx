@@ -9,6 +9,8 @@ export const Route = createFileRoute("/_authenticated/admin/audit-log")({
   staticData: { sitemap: false },
   head: () => ({
     meta: [
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary" },
       { title: "Audit log — DriveSafe Vision Admin" },
       { name: "description", content: "Record of role changes, admin actions and deadline changes." },
       { property: "og:title", content: "Audit log — DriveSafe Vision Admin" },
