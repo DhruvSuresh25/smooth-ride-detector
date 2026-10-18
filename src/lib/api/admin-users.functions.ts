@@ -1,31 +1,16 @@
+import { z } from "zod";
+import { assertAdminAccess } from "./admin-access";
+import { assertRequestSucceeded } from "./errors";
 import { createServerFn } from "@tanstack/react-start";
 
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 
-type AuthedContext = {
-  supabase: {
-    rpc: (
-      fn: "has_role",
-      args: { _user_id: string; _role: "admin" | "user" },
-    ) => PromiseLike<{ data: boolean | null; error: { message: string } | null }>;
-  };
-  userId: string;
-};
-
-async function assertAdmin(context: AuthedContext) {
-  const { data, error } = await context.supabase.rpc("has_role", {
-    _user_id: context.userId,
-    _role: "admin",
-  });
-  if (error) throw new Error(error.message);
-  if (!data) throw new Error("Administrator access required");
-}
 
 export const setAccountStatus = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((input: { userId: string; status: "Active" | "Suspended" }) => input)
+  .inputValidator((input) => z.object({ userId: z.string().uuid(), status: z.enum(["Active", "Suspended"]) }).parse(input))
   .handler(async ({ data, context }) => {
-    await assertAdmin(context);
+    await assertAdminAccess(context, "Administrator access required");
     if (data.userId === context.userId) {
       throw new Error("You cannot suspend your own administrator account");
     }
@@ -34,26 +19,26 @@ export const setAccountStatus = createServerFn({ method: "POST" })
       .from("profiles")
       .update({ account_status: data.status })
       .eq("id", data.userId);
-    if (error) throw new Error(error.message);
-    await supabaseAdmin.rpc("log_audit", {
+    assertRequestSucceeded({ error }, "Could not update the account. Some changes may have completed; refresh before retrying.");
+    assertRequestSucceeded(await supabaseAdmin.rpc("log_audit", {
       _actor: context.userId,
       _action: "Account status changed",
       _details: { user: data.userId, to: data.status },
-    });
+    }), "Account updated, but its audit entry could not be recorded. Refresh before retrying.");
     return { ok: true };
   });
 
 export const deleteUserAccount = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((input: { userId: string }) => input)
+  .inputValidator((input) => z.object({ userId: z.string().uuid() }).parse(input))
   .handler(async ({ data, context }) => {
-    await assertAdmin(context);
+    await assertAdminAccess(context, "Administrator access required");
     if (data.userId === context.userId) {
       throw new Error("You cannot delete your own administrator account");
     }
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     const id = data.userId;
-    await supabaseAdmin.from("reports").update({ assigned_admin_id: null }).eq("assigned_admin_id", id);
+    assertRequestSucceeded(await supabaseAdmin.from("reports").update({ assigned_admin_id: null }).eq("assigned_admin_id", id), "Could not unassign this account’s reports. No account deletion was attempted.");
     const steps = [
       supabaseAdmin.from("reports").delete().eq("user_id", id),
       supabaseAdmin.from("notifications").delete().eq("user_id", id),
@@ -63,9 +48,11 @@ export const deleteUserAccount = createServerFn({ method: "POST" })
     ];
     for (const step of steps) {
       const { error } = await step;
-      if (error) throw new Error(error.message);
+      assertRequestSucceeded({ error }, "Could not update the account. Some changes may have completed; refresh before retrying.");
     }
     const { error } = await supabaseAdmin.auth.admin.deleteUser(id);
-    if (error && !/not found/i.test(error.message)) throw new Error(error.message);
+    if (error && !/not found/i.test(error.message)) {
+      assertRequestSucceeded({ error }, "Account cleanup completed, but account deletion failed. Refresh before retrying.");
+    }
     return { ok: true };
   });

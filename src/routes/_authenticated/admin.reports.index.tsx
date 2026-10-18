@@ -1,3 +1,4 @@
+import { filterAndSortReports } from "@/features/reports/list";
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { FileStack, Loader2, Search } from "lucide-react";
 import { useMemo, useState } from "react";
@@ -14,7 +15,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { SEVERITIES, STATUSES, STATUS_ORDER } from "@/lib/constants";
+import { SEVERITIES, STATUSES } from "@/lib/constants";
 import { useAllReports } from "@/lib/reports";
 import { useAreas, useStaffRole } from "@/lib/staff";
 
@@ -68,34 +69,10 @@ function AdminReportsPage() {
     });
   };
 
-  const filtered = useMemo(() => {
-    let list = [...(reports ?? [])];
-    const term = search.trim().toLowerCase();
-    if (term) {
-      list = list.filter(
-        (r) =>
-          r.report_number.toLowerCase().includes(term) ||
-          r.address.toLowerCase().includes(term) ||
-          r.submitter_name.toLowerCase().includes(term) ||
-          r.submitter_email.toLowerCase().includes(term),
-      );
-    }
-    if (status !== "all") list = list.filter((r) => r.status === status);
-    if (severity !== "all") list = list.filter((r) => r.severity === severity);
-    if (area === "unassigned") list = list.filter((r) => !r.area_id);
-    else if (area !== "all") list = list.filter((r) => r.area_id === area);
-
-    const rank = { Critical: 4, High: 3, Medium: 2, Low: 1 } as const;
-    list.sort((a, b) => {
-      if (sort === "oldest")
-        return new Date(a.created_at).getTime() - new Date(b.created_at).getTime();
-      if (sort === "severity") return rank[b.severity] - rank[a.severity];
-      if (sort === "status")
-        return (STATUS_ORDER[a.status] ?? 99) - (STATUS_ORDER[b.status] ?? 99);
-      return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
-    });
-    return list;
-  }, [reports, search, status, severity, area, sort]);
+  const filtered = useMemo(
+    () => filterAndSortReports(reports ?? [], { search, status, severity, area, sort, includeSubmitter: true }),
+    [reports, search, status, severity, area, sort],
+  );
 
   const pageCount = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE));
   const currentPage = Math.min(page, pageCount);

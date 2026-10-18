@@ -1,3 +1,6 @@
+import { assertAdminAccess } from "./admin-access";
+import { assertRequestSucceeded } from "./errors";
+import { APP_ORIGIN } from "@/config/app";
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
@@ -7,11 +10,7 @@ export const notifyReportUpdate = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((d) => z.object({ reportId: z.string().uuid() }).parse(d))
   .handler(async ({ data, context }) => {
-    const { data: isAdmin } = await context.supabase.rpc("has_role", {
-      _user_id: context.userId,
-      _role: "admin",
-    });
-    if (!isAdmin) throw new Error("Forbidden");
+    await assertAdminAccess(context, "Forbidden");
 
     const { data: report, error } = await context.supabase
       .from("reports")
@@ -20,11 +19,12 @@ export const notifyReportUpdate = createServerFn({ method: "POST" })
       .single();
     if (error || !report) throw new Error("Report not found");
 
-    const { data: profile } = await context.supabase
+    const { data: profile, error: profileError } = await context.supabase
       .from("profiles")
       .select("email, full_name, email_notifications")
       .eq("id", report.user_id)
       .maybeSingle();
+    assertRequestSucceeded({ error: profileError }, "Could not check notification preferences.");
     if (profile && profile.email_notifications === false) return { sent: false, reason: "opted_out" };
 
     const to = report.submitter_email || profile?.email;
@@ -38,7 +38,7 @@ export const notifyReportUpdate = createServerFn({ method: "POST" })
         status: report.status,
         note: report.admin_notes ?? undefined,
         address: report.address || undefined,
-        reportUrl: `https://drivesafevision.com/reports/${report.id}`,
+        reportUrl: `${APP_ORIGIN}/reports/${report.id}`,
       },
       idempotencyKey: `report-status-update-${report.id}-${report.updated_at}`,
     });

@@ -41,7 +41,8 @@ export const askSignInAssistant = createServerFn({ method: "POST" })
     if ((count ?? 0) >= 5) {
       return { ok: false as const, error: "You've asked for help several times. Please wait an hour or use Forgot password." };
     }
-    await supabaseAdmin.from("ai_assist_usage").insert({ client_hash: clientHash });
+    const { error: usageError } = await supabaseAdmin.from("ai_assist_usage").insert({ client_hash: clientHash });
+    if (usageError) return { ok: false as const, error: "Sign-in help is unavailable right now. Please try again shortly." };
     const { getAuthRecoveryGuidance } = await import("@/lib/auth-assistant.server");
     return getAuthRecoveryGuidance(data.description, data.issueKind);
   });
