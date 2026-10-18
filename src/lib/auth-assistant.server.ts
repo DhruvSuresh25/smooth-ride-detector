@@ -4,8 +4,7 @@ import { streamText } from "ai";
 import type { AuthIssueKind } from "./auth-errors";
 import { createLovableAiGatewayRunIdFetch } from "./ai/run-id.server.ts";
 
-const MODEL = "openai/gpt-6-astra";
-const GATEWAY_URL = "https://ai.gateway.lovable.dev/v1";
+import { AI_MODEL, AI_GATEWAY_URL } from "@/config/app";
 
 function redactSensitiveText(value: string) {
   return value
@@ -29,7 +28,7 @@ export async function getAuthRecoveryGuidance(description: string, issueKind: Au
 
   const runIdFetch = createLovableAiGatewayRunIdFetch();
   const provider = createOpenAI({
-    baseURL: GATEWAY_URL,
+    baseURL: AI_GATEWAY_URL,
     apiKey,
     headers: {
       "Lovable-API-Key": apiKey,
@@ -40,7 +39,7 @@ export async function getAuthRecoveryGuidance(description: string, issueKind: Au
 
   try {
     const result = streamText({
-      model: provider.responses(MODEL),
+      model: provider.responses(AI_MODEL),
       system: `You are the DriveSafe Vision sign-in recovery assistant. Help a citizen resolve an email/password authentication problem safely.
 
 Rules:

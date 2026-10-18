@@ -4,6 +4,7 @@ import type { Session, User } from "@supabase/supabase-js";
 import { createContext, useContext, useEffect, useState, type ReactNode } from "react";
 
 import { supabase } from "@/integrations/supabase/client";
+import { assertRequestSucceeded } from "@/lib/api/errors";
 
 type Profile = {
   id: string;
@@ -49,9 +50,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       }
     });
 
-    supabase.auth.getSession().then(({ data }) => {
+    supabase.auth.getSession().then(({ data, error }) => {
       if (!active || sawAuthEvent) return;
-      setSession(data.session);
+      setSession(error ? null : data.session);
+      setLoading(false);
+    }).catch(() => {
+      if (!active || sawAuthEvent) return;
+      setSession(null);
       setLoading(false);
     });
 
@@ -78,33 +83,14 @@ export function useProfile() {
     queryKey: ["profile", user?.id],
     enabled: !!user,
     queryFn: async (): Promise<Profile | null> => {
+      if (!user) return null;
       const { data, error } = await supabase
         .from("profiles")
         .select("*")
         .eq("id", user?.id ?? "")
         .maybeSingle();
-      if (error) throw error;
+      assertRequestSucceeded({ error }, "Could not load your profile. Please try again.");
       return data as Profile | null;
-    },
-  });
-}
-
-export function useIsAdmin() {
-  const { user } = useAuth();
-  return useQuery({
-    queryKey: ["is-admin", user?.id],
-    enabled: !!user,
-    staleTime: 0,
-    refetchOnMount: "always",
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from("user_roles")
-        .select("role")
-        .eq("user_id", user?.id ?? "")
-        .eq("role", "admin")
-        .maybeSingle();
-      if (error) throw error;
-      return !!data;
     },
   });
 }
@@ -116,7 +102,8 @@ export function useSignOut() {
   return async () => {
     await queryClient.cancelQueries();
     queryClient.clear();
-    await supabase.auth.signOut();
+    const result = await supabase.auth.signOut();
+    assertRequestSucceeded(result, "Sign-out could not be completed. Please try again.");
     navigate({ to: "/", replace: true });
   };
 }

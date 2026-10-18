@@ -2,10 +2,8 @@ import { createOpenAI } from "@ai-sdk/openai";
 import { streamText } from "ai";
 
 import { createLovableAiGatewayRunIdFetch } from "./ai/run-id.server.ts";
-
-const MODEL = "openai/gpt-6-astra";
-const GATEWAY_URL = "https://ai.gateway.lovable.dev/v1";
-const SEVERITIES = ["Low", "Medium", "High", "Critical"] as const;
+import { AI_MODEL, AI_GATEWAY_URL } from "@/config/app";
+import { SEVERITIES } from "@/lib/constants";
 
 export type VisionDetection = { x: number; y: number; width: number; height: number; confidence: number };
 export type VisionResult = {
@@ -80,7 +78,7 @@ export async function analyzePotholeImage(imageDataUrl: string) {
 
   const runIdFetch = createLovableAiGatewayRunIdFetch();
   const provider = createOpenAI({
-    baseURL: GATEWAY_URL,
+    baseURL: AI_GATEWAY_URL,
     apiKey,
     headers: { "Lovable-API-Key": apiKey, "X-Lovable-AIG-SDK": "vercel-ai-sdk" },
     fetch: runIdFetch.fetch,
@@ -88,7 +86,7 @@ export async function analyzePotholeImage(imageDataUrl: string) {
 
   try {
     const result = streamText({
-      model: provider.responses(MODEL),
+      model: provider.responses(AI_MODEL),
       system: SYSTEM,
       messages: [
         {
