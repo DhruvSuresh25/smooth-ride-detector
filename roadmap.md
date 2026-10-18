@@ -1,12 +1,12 @@
 # DriveSafe Vision — project organization
 
 ## Codebase cleanup
-- [ ] Separate feature data access, state hooks, business rules, and server APIs
-- [ ] Remove verified duplication and centralize API error handling
-- [ ] Organize reusable UI and use consistent file naming
-- [ ] Isolate configuration and document environment boundaries
-- [ ] Document architecture, state management, and API conventions
-- [ ] Validate public and signed-in flows and regression tests
+- [x] Separate feature data access, state hooks, business rules, and server APIs
+- [x] Remove verified duplication and centralize API error handling
+- [x] Organize reusable UI and use consistent file naming
+- [x] Isolate configuration and document environment boundaries
+- [x] Document architecture, state management, and API conventions
+- [x] Validate public and signed-in flows and regression tests
 
 ## Earlier QA work
 
