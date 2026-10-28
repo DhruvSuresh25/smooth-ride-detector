@@ -29,6 +29,9 @@ const AuthContext = createContext<AuthContextValue>({
   loading: true,
 });
 
+/** Signed-in users are signed out after this much inactivity. */
+export const IDLE_TIMEOUT_MS = 10_000;
+
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [session, setSession] = useState<Session | null>(null);
   const [loading, setLoading] = useState(true);
@@ -65,6 +68,29 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       sub.subscription.unsubscribe();
     };
   }, [queryClient, router]);
+
+  // Auto sign-out after a period of no user activity.
+  useEffect(() => {
+    if (!session) return;
+    let timer: ReturnType<typeof setTimeout>;
+    const logout = async () => {
+      await queryClient.cancelQueries();
+      queryClient.clear();
+      await supabase.auth.signOut().catch(() => undefined);
+      void router.navigate({ to: "/login", replace: true });
+    };
+    const reset = () => {
+      clearTimeout(timer);
+      timer = setTimeout(() => void logout(), IDLE_TIMEOUT_MS);
+    };
+    const events = ["mousemove", "mousedown", "keydown", "scroll", "touchstart", "wheel"] as const;
+    events.forEach((e) => window.addEventListener(e, reset, { passive: true }));
+    reset();
+    return () => {
+      clearTimeout(timer);
+      events.forEach((e) => window.removeEventListener(e, reset));
+    };
+  }, [session, queryClient, router]);
 
   return (
     <AuthContext.Provider value={{ session, user: session?.user ?? null, loading }}>
