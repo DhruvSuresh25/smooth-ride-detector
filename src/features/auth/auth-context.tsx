@@ -29,8 +29,8 @@ const AuthContext = createContext<AuthContextValue>({
   loading: true,
 });
 
-/** Signed-in users are signed out after this much inactivity. */
-export const IDLE_TIMEOUT_MS = 10_000;
+/** Signed-in users are signed out after this much inactivity (30 seconds). */
+export const IDLE_TIMEOUT_MS = 30_000;
 
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [session, setSession] = useState<Session | null>(null);
