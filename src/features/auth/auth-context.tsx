@@ -31,6 +31,8 @@ const AuthContext = createContext<AuthContextValue>({
 
 /** Signed-in users are signed out after this much inactivity (30 seconds). */
 export const IDLE_TIMEOUT_MS = 30_000;
+/** Grace period while the window is unfocused (e.g. file picker open). */
+export const UNFOCUSED_TIMEOUT_MS = 5 * 60_000;
 
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [session, setSession] = useState<Session | null>(null);
@@ -70,27 +72,42 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, [queryClient, router]);
 
   // Auto sign-out after a period of no user activity.
+  // Keyed on user id (not the session object) so token refreshes don't restart it.
+  // Listeners use capture so scrolling inside panels/dialogs counts as activity.
+  // While the window is unfocused (e.g. the photo/file picker is open) a longer
+  // grace period applies so users aren't signed out mid-upload.
+  const userId = session?.user?.id ?? null;
   useEffect(() => {
-    if (!session) return;
-    let timer: ReturnType<typeof setTimeout>;
+    if (!userId) return;
+    let last = Date.now();
+    let loggingOut = false;
     const logout = async () => {
+      if (loggingOut) return;
+      loggingOut = true;
       await queryClient.cancelQueries();
       queryClient.clear();
       await supabase.auth.signOut().catch(() => undefined);
       void router.navigate({ to: "/login", replace: true });
     };
-    const reset = () => {
-      clearTimeout(timer);
-      timer = setTimeout(() => void logout(), IDLE_TIMEOUT_MS);
+    const mark = () => {
+      last = Date.now();
     };
-    const events = ["mousemove", "mousedown", "keydown", "scroll", "touchstart", "wheel"] as const;
-    events.forEach((e) => window.addEventListener(e, reset, { passive: true }));
-    reset();
+    const events = [
+      "mousemove", "mousedown", "pointerdown", "pointermove", "click", "keydown",
+      "input", "change", "scroll", "touchstart", "touchmove", "wheel", "focus", "focusin",
+    ] as const;
+    events.forEach((e) => window.addEventListener(e, mark, { passive: true, capture: true }));
+    document.addEventListener("visibilitychange", mark);
+    const interval = setInterval(() => {
+      const limit = document.hasFocus() ? IDLE_TIMEOUT_MS : UNFOCUSED_TIMEOUT_MS;
+      if (Date.now() - last >= limit) void logout();
+    }, 1000);
     return () => {
-      clearTimeout(timer);
-      events.forEach((e) => window.removeEventListener(e, reset));
+      clearInterval(interval);
+      events.forEach((e) => window.removeEventListener(e, mark, { capture: true }));
+      document.removeEventListener("visibilitychange", mark);
     };
-  }, [session, queryClient, router]);
+  }, [userId, queryClient, router]);
 
   return (
     <AuthContext.Provider value={{ session, user: session?.user ?? null, loading }}>
