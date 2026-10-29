@@ -5,6 +5,13 @@ import { createContext, useContext, useEffect, useState, type ReactNode } from "
 
 import { supabase } from "@/integrations/supabase/client";
 import { assertRequestSucceeded } from "@/lib/api/errors";
+import {
+  anotherTabIsOpen,
+  hasAuthParams,
+  hasTabMarker,
+  listenForPresencePings,
+  setTabMarker,
+} from "./tab-session";
 
 type Profile = {
   id: string;
@@ -29,10 +36,22 @@ const AuthContext = createContext<AuthContextValue>({
   loading: true,
 });
 
-/** Signed-in users are signed out after this much inactivity (30 seconds). */
-export const IDLE_TIMEOUT_MS = 30_000;
-/** Grace period while the window is unfocused (e.g. file picker open). */
-export const UNFOCUSED_TIMEOUT_MS = 5 * 60_000;
+/**
+ * Decide, once per page load, whether a stored session belongs to a tab that is
+ * still open. If every tab was closed, the stored session is discarded so the
+ * user must sign in again. Reloads and extra tabs keep the user signed in.
+ */
+async function checkTabSession(): Promise<void> {
+  if (hasTabMarker() || hasAuthParams()) {
+    setTabMarker();
+    return;
+  }
+  const { data } = await supabase.auth.getSession().catch(() => ({ data: { session: null } }));
+  if (data.session && !(await anotherTabIsOpen())) {
+    await supabase.auth.signOut({ scope: "local" }).catch(() => undefined);
+  }
+  setTabMarker();
+}
 
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [session, setSession] = useState<Session | null>(null);
@@ -43,71 +62,49 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     let active = true;
     let sawAuthEvent = false;
+    const stopListening = listenForPresencePings();
+    const tabCheck = checkTabSession();
+
     const { data: sub } = supabase.auth.onAuthStateChange((event, nextSession) => {
-      if (!active) return;
-      sawAuthEvent = true;
-      setSession(nextSession);
-      setLoading(false);
-      if (event === "SIGNED_IN" || event === "SIGNED_OUT" || event === "USER_UPDATED") {
-        void router.invalidate();
-        if (event === "SIGNED_OUT") queryClient.clear();
-        else void queryClient.invalidateQueries();
-      }
+      void tabCheck.then(async () => {
+        if (!active) return;
+        // The initial event may carry a session discarded by the tab check; re-read it.
+        const current =
+          event === "INITIAL_SESSION"
+            ? (await supabase.auth.getSession().catch(() => ({ data: { session: null } }))).data.session
+            : nextSession;
+        if (!active) return;
+        sawAuthEvent = true;
+        if (event === "SIGNED_IN") setTabMarker();
+        setSession(current);
+        setLoading(false);
+        if (event === "SIGNED_IN" || event === "SIGNED_OUT" || event === "USER_UPDATED") {
+          void router.invalidate();
+          if (event === "SIGNED_OUT") queryClient.clear();
+          else void queryClient.invalidateQueries();
+        }
+      });
     });
 
-    supabase.auth.getSession().then(({ data, error }) => {
-      if (!active || sawAuthEvent) return;
-      setSession(error ? null : data.session);
-      setLoading(false);
-    }).catch(() => {
-      if (!active || sawAuthEvent) return;
-      setSession(null);
-      setLoading(false);
-    });
+    tabCheck
+      .then(() => supabase.auth.getSession())
+      .then(({ data, error }) => {
+        if (!active || sawAuthEvent) return;
+        setSession(error ? null : data.session);
+        setLoading(false);
+      })
+      .catch(() => {
+        if (!active || sawAuthEvent) return;
+        setSession(null);
+        setLoading(false);
+      });
 
     return () => {
       active = false;
+      stopListening();
       sub.subscription.unsubscribe();
     };
   }, [queryClient, router]);
-
-  // Auto sign-out after a period of no user activity.
-  // Keyed on user id (not the session object) so token refreshes don't restart it.
-  // Listeners use capture so scrolling inside panels/dialogs counts as activity.
-  // While the window is unfocused (e.g. the photo/file picker is open) a longer
-  // grace period applies so users aren't signed out mid-upload.
-  const userId = session?.user?.id ?? null;
-  useEffect(() => {
-    if (!userId) return;
-    let last = Date.now();
-    let loggingOut = false;
-    const logout = async () => {
-      if (loggingOut) return;
-      loggingOut = true;
-      await queryClient.cancelQueries();
-      queryClient.clear();
-      await supabase.auth.signOut().catch(() => undefined);
-      void router.navigate({ to: "/login", replace: true });
-    };
-    const mark = () => {
-      last = Date.now();
-    };
-    const events = [
-      "mousemove", "mousedown", "pointerdown", "pointermove", "click", "keydown",
-      "input", "change", "scroll", "touchstart", "touchmove", "wheel", "focus", "focusin",
-    ] as const;
-    events.forEach((e) => window.addEventListener(e, mark, { passive: true, capture: true }));
-    document.addEventListener("visibilitychange", mark);
-    const interval = setInterval(() => {
-      const limit = document.hasFocus() ? IDLE_TIMEOUT_MS : UNFOCUSED_TIMEOUT_MS;
-      if (Date.now() - last >= limit) void logout();
-    }, 1000);
-    return () => {
-      clearInterval(interval);
-      events.forEach((e) => window.removeEventListener(e, mark, { capture: true }));
-      document.removeEventListener("visibilitychange", mark);
-    };
-  }, [userId, queryClient, router]);
 
   return (
     <AuthContext.Provider value={{ session, user: session?.user ?? null, loading }}>
