@@ -21,3 +21,4 @@
 - Store non-secret defaults in `src/config/` and read managed server credentials only inside execution boundaries; this separates deployment configuration from application behavior.
 - Use kebab-case for new modules, PascalCase component names, and TanStack route naming; preserve compatibility paths instead of renaming public interfaces.
 - Keep pure-rule regression tests beside their feature/API modules and run them with Vitest; this makes behavior-preserving refactors checkable.
+- Sign-out on tab close uses a per-tab sessionStorage marker plus a BroadcastChannel presence ping (src/features/auth/tab-session.ts); no idle timer, because inactivity logouts disrupted active users.
